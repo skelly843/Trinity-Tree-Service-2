@@ -68,7 +68,14 @@ export default function AdminCalendarPage() {
       .select('id, full_name')
       .in('role', ['global_admin', 'admin', 'employee'])
 
-    setAppointments(apts || [])
+    // Internal notes live in a staff-only table, away from customer-readable rows
+    const { data: staffNotes } = await supabase
+      .from('internal_record_notes')
+      .select('record_id, internal_notes')
+      .eq('record_type', 'appointment')
+    const notesById = new Map((staffNotes || []).map((n: any) => [n.record_id, n.internal_notes]))
+
+    setAppointments((apts || []).map((apt: any) => ({ ...apt, internal_notes: notesById.get(apt.id) ?? apt.internal_notes })))
     setCustomers(custs || [])
     setProperties(props || [])
     setServiceRequests(reqs || [])
