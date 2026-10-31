@@ -4,20 +4,15 @@ import React, { useState } from 'react'
 import { ArrowRight, ImagePlus, Maximize2, Minimize2, X } from 'lucide-react'
 import { InlineText } from '@/components/admin/InlineText'
 import { ImageCropperModal } from '@/components/admin/ImageCropperModal'
+import { isLightColor } from '@/utils/siteTheme'
 import { EditableLink } from './shared'
 import type { BlockProps } from './types'
-
-/** Dark text on pale background colors, so the headline stays readable */
-function isLightColor(hex?: string) {
-  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return false
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
-  return 0.299 * r + 0.587 * g + 0.114 * b > 165
-}
 
 export default function HeroBlock({ data, editable, update }: BlockProps) {
   const [cropperOpen, setCropperOpen] = useState(false)
   const large = data.variant !== 'compact'
   const lightBackground = !data.backgroundImage && isLightColor(data.backgroundColor)
+  const position = data.contentPosition || (large ? 'left' : 'center')
 
   return (
     <section
@@ -33,8 +28,12 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
         </div>
       )}
 
-      <div className={`relative z-10 w-full max-w-6xl mx-auto px-6 ${large ? '' : 'text-center'}`}>
-        <div className={`space-y-4 ${large ? 'max-w-3xl' : 'max-w-3xl mx-auto'}`}>
+      <div className="relative z-10 w-full max-w-6xl mx-auto px-6">
+        <div
+          className={`space-y-4 max-w-3xl ${
+            position === 'center' ? 'mx-auto text-center' : position === 'right' ? 'ml-auto text-right' : 'text-left'
+          }`}
+        >
           <InlineText
             element="h1"
             value={data.title || ''}
@@ -49,13 +48,17 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
             value={data.subtitle || ''}
             onChange={(subtitle) => update({ subtitle })}
             placeholder="Subtitle"
-            className={`leading-relaxed block ${large ? 'text-base md:text-lg max-w-2xl' : 'text-lg'} ${
+            className={`leading-relaxed block ${large ? 'text-base md:text-lg' : 'text-lg'} ${
               lightBackground ? 'text-slate-700' : large ? 'text-slate-300' : 'text-slate-400'
             }`}
           />
 
           {(editable || data.ctaText || data.secondaryCtaText) && (
-            <div className={`flex flex-col sm:flex-row gap-4 pt-4 ${large ? '' : 'justify-center'}`}>
+            <div
+              className={`flex flex-col sm:flex-row gap-4 pt-4 ${
+                position === 'center' ? 'justify-center' : position === 'right' ? 'justify-end' : ''
+              }`}
+            >
               <EditableLink
                 href={data.ctaUrl}
                 text={data.ctaText || ''}

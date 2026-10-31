@@ -27,6 +27,18 @@ body {
   padding-top: var(--editor-toolbar-h, 0px);
 }
 
+/* Section style options. Text inside cards and buttons keeps its own colors. */
+.block-on-dark section :is(h1, h2, h3, h4, p, span, li, label):not(section [class*="bg-"] *) {
+  color: #ffffff;
+}
+.block-align-left section :is(h1, h2, h3, h4, p) { text-align: left; }
+.block-align-center section :is(h1, h2, h3, h4, p) { text-align: center; }
+.block-align-right section :is(h1, h2, h3, h4, p) { text-align: right; }
+.block-space-compact > div > section,
+.block-space-compact > section { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.block-space-tall > div > section,
+.block-space-tall > section { padding-top: 7rem; padding-bottom: 7rem; }
+
 /* Placeholder for empty inline-editable text */
 .inline-text-editable:empty::before {
   content: attr(data-placeholder);

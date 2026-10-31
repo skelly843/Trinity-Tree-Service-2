@@ -156,6 +156,16 @@ export const WebsiteBuilderProvider: React.FC<{
     return () => subscription?.unsubscribe()
   }, [supabase])
 
+  // ---------- open a page straight in the editor (links from the Website Editor dashboard) ----------
+  useEffect(() => {
+    if (!isGlobalAdmin || !currentPage) return
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('edit') !== '1') return
+    setEditModeRaw(true)
+    url.searchParams.delete('edit')
+    window.history.replaceState(null, '', url.pathname + url.search)
+  }, [isGlobalAdmin, currentPage])
+
   // ---------- brand & theme (loaded on the server; edits preview live until saved) ----------
   const setStyles = setStylesState
   const resetBrand = useCallback(() => setStylesState(savedBrand), [savedBrand])

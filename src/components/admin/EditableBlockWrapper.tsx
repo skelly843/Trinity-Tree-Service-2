@@ -4,7 +4,9 @@ import React, { useState } from 'react'
 import { useWebsiteBuilder } from '@/context/WebsiteBuilderContext'
 import { getBlockDefinition } from '@/components/blocks/registry'
 import type { PageBlock } from '@/components/blocks/types'
+import { SectionStylePanel } from '@/components/admin/SectionStylePanel'
 import {
+  Paintbrush,
   ArrowUp,
   ArrowDown,
   Copy,
@@ -28,6 +30,7 @@ export const EditableBlockWrapper: React.FC<EditableBlockWrapperProps> = ({ bloc
   const { moveBlock, moveBlockTo, duplicateBlock, deleteBlock, toggleBlockVisibility } = useWebsiteBuilder()
   const [dropSide, setDropSide] = useState<'before' | 'after' | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [styleOpen, setStyleOpen] = useState(false)
   const label = getBlockDefinition(block.block_type)?.label || block.block_type
 
   const onDragStart = (e: React.DragEvent) => {
@@ -92,6 +95,16 @@ export const EditableBlockWrapper: React.FC<EditableBlockWrapperProps> = ({ bloc
         </span>
         <span className="font-bold text-[10px] uppercase text-blue-300 tracking-wider pr-1">{label}</span>
 
+        <button
+          type="button"
+          onClick={() => setStyleOpen(!styleOpen)}
+          className={`flex items-center gap-1 px-2 py-1 rounded font-bold ${styleOpen ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-200 hover:bg-slate-700'}`}
+          title="Background, alignment and spacing"
+        >
+          <Paintbrush size={13} />
+          <span>Style</span>
+        </button>
+
         <div className="flex items-center gap-0.5 border-l border-slate-700 pl-1">
           <button
             type="button"
@@ -139,6 +152,8 @@ export const EditableBlockWrapper: React.FC<EditableBlockWrapperProps> = ({ bloc
           </button>
         </div>
       </div>
+
+      {styleOpen && <SectionStylePanel block={block} onClose={() => setStyleOpen(false)} />}
 
       <div className={`relative ${block.is_visible ? '' : 'opacity-50'}`}>
         {!block.is_visible && (

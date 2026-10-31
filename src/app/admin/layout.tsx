@@ -66,12 +66,12 @@ export default async function AdminLayout({
     { label: 'Notes', href: '/admin/notes', icon: MessageSquare },
     { label: 'Services Manager', href: '/admin/services', icon: Wrench },
     { label: 'Gallery Manager', href: '/admin/gallery', icon: ImageIcon },
-    { label: 'Website Editor', href: '/admin/content', icon: Monitor },
   ]
 
   // Only global_admin can access Admin User Accounts and Audit logs
   if (role === 'global_admin') {
     navItems.push(
+      { label: 'Website Editor', href: '/admin/website-builder', icon: Monitor },
       { label: 'Admin Accounts', href: '/admin/users', icon: UserCheck },
       { label: 'Audit Log', href: '/admin/audit', icon: ShieldCheck }
     )
