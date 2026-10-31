@@ -17,6 +17,18 @@ alter table public.service_categories add column if not exists is_active boolean
 alter table public.gallery_albums add column if not exists is_published boolean not null default true;
 alter table public.service_requests add column if not exists created_by uuid references public.profiles(id) on delete set null;
 alter table public.documents add column if not exists is_visible_to_customer boolean not null default false;
+alter table public.gallery_albums add column if not exists sort_order integer not null default 0;
+alter table public.gallery_albums add column if not exists updated_at timestamp with time zone not null default now();
+alter table public.navigation_items add column if not exists updated_at timestamp with time zone not null default now();
+alter table public.service_categories add column if not exists display_order integer not null default 0;
+alter table public.service_categories add column if not exists updated_at timestamp with time zone not null default now();
+alter table public.services add column if not exists category_id uuid references public.service_categories(id) on delete set null;
+alter table public.website_content_blocks add column if not exists display_order integer not null default 0;
+alter table public.website_content_blocks add column if not exists is_active boolean not null default true;
+alter table public.website_content_blocks add column if not exists created_at timestamp with time zone not null default now();
+alter table public.website_pages add column if not exists seo_title text;
+alter table public.website_pages add column if not exists seo_description text;
+alter table public.website_pages add column if not exists updated_at timestamp with time zone not null default now();
 
 -- ==========================================
 -- 2. ROLE HELPERS (a deactivated account has no role)

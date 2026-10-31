@@ -61,6 +61,23 @@ export default function AdminPaymentsPage() {
     setShowModal(true)
   }
 
+  // A database trigger updates the invoice once a payment is confirmed
+  const handleReview = async (id: string, status: 'confirmed' | 'rejected') => {
+    setError(null)
+    setSuccess(null)
+
+    const { data, error: updErr } = await supabase.from('payments').update({ status }).eq('id', id).select('id')
+
+    if (updErr) {
+      setError(updErr.message)
+    } else if (!data || data.length === 0) {
+      setError('You do not have access to change this payment.')
+    } else {
+      setSuccess(status === 'confirmed' ? 'Payment confirmed and invoice updated.' : 'Payment rejected.')
+      loadPayments()
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
@@ -85,15 +102,6 @@ export default function AdminPaymentsPage() {
     if (insErr) {
       setError(insErr.message)
     } else {
-      // update invoice status to paid if payment amount matches total
-      const selectedInvoice = invoices.find(i => i.id === formData.invoiceId)
-      if (selectedInvoice && Number(selectedInvoice.total) <= amountNum) {
-        await supabase
-          .from('invoices')
-          .update({ status: 'paid', amount_paid: amountNum })
-          .eq('id', formData.invoiceId)
-      }
-
       setSuccess('Payment registered and reconciled successfully!')
       setShowModal(false)
       loadPayments()
@@ -158,6 +166,7 @@ export default function AdminPaymentsPage() {
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Method</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Reference #</th>
                   <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Amount Paid</th>
+                  <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -181,11 +190,25 @@ export default function AdminPaymentsPage() {
                     <td className="px-6 py-4 text-sm font-black text-green-600">
                       +${Number(p.amount || 0).toFixed(2)}
                     </td>
+                    <td className="px-6 py-4 text-sm">
+                      {p.status === 'pending' ? (
+                        <div className="flex gap-2">
+                          <button onClick={() => handleReview(p.id, 'confirmed')} className="px-3 py-1.5 rounded-lg text-xs font-bold border text-green-600 bg-green-50 border-green-100 hover:bg-green-100">
+                            Confirm
+                          </button>
+                          <button onClick={() => handleReview(p.id, 'rejected')} className="px-3 py-1.5 rounded-lg text-xs font-bold border text-red-600 bg-red-50 border-red-100 hover:bg-red-100">
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <span className="text-xs font-bold capitalize text-slate-500">{p.status}</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {payments.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400 italic text-sm">
+                    <td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic text-sm">
                       No payments recorded yet. Click "Record New Payment" to book a client transaction.
                     </td>
                   </tr>

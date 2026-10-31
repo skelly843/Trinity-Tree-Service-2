@@ -14,13 +14,24 @@ Configure these environment variables in your hosting provider (e.g., Netlify).
 Each company gets its own Supabase project and its own Netlify site, both built from this repository. Nothing is shared between companies.
 
 1. **Create a Supabase project** for the company.
-2. **Run the migrations** in the Supabase SQL Editor, in order: `supabase/migrations/001_initial_schema.sql`, `002_website_builder.sql`, `003_page_editor.sql`, `004_site_branding.sql`, `005_role_permissions.sql`, `006_storage_buckets.sql`, `007_security_hardening.sql`, `008_private_staff_notes.sql`. Leave **Confirm email** on under Authentication: customer accounts link to their records only after the email is confirmed. The migrations start the site with the sample Aquaman text, which the company replaces in the editor.
-3. **Create a Netlify site** from this repository and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from the company's Supabase project, Settings > API). Add the Stripe keys if the company takes payments.
-4. **Create the company's editor account**: sign up on the new site, then make that account a global admin (see below).
-5. **Brand the site**: sign in, open any public page, click **Edit this page** (bottom right), then:
+2. **Set up the database** in the Supabase SQL Editor: run all of `supabase/full-setup.sql`. Then edit the business name and contact values at the top of `supabase/new-company-start.sql` and run that once. It clears the sample services and gallery and replaces the sample business name. Never run it on a site in use.
+3. **Check Authentication settings** in Supabase. Leave **Confirm email** on: customer accounts link to their records only after the email is confirmed. Set **Site URL** to the company's web address so confirmation emails link to the right site. Add custom email sending (SMTP) before going live, because Supabase's built-in email is limited to a few messages an hour.
+4. **Create a Netlify site** from this repository and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from the company's Supabase project, Settings > API). Add the Stripe keys if the company takes card payments. Set the production branch to the repository's default branch.
+5. **Create the global admin accounts**: sign up on the new site with your account and the business owner's, then make both global admins (see below).
+6. **Brand the site**: sign in, open any public page, click **Edit this page** (bottom right), then:
    - **Brand & Theme** in the toolbar: business name, logo, browser tab icon, colors, fonts, corner style, footer text and search-engine title/description. Click **Save brand & theme**.
-   - Click any text on a page to change it, use **Replace photo** on images, and drag, add, hide or delete sections. Click **Publish** on each page.
+   - Click any text on a page to change it. On the first section, use **Add background photo** or **Background color**. Use **Replace photo** on images, and drag, add, hide or delete sections. Click **Publish** on each page.
    - Phone, email, address, hours and service areas: **Admin > Settings**. Services and gallery photos: their admin pages.
+
+When a migration is added to `supabase/migrations`, run that one file on each existing client project, and add it to `full-setup.sql`.
+
+## Customer Accounts
+
+New customer accounts must confirm their email, then wait for a global admin. Approve them in **Admin > Admin Accounts > Customer Logins**. To connect an account to its records, add a customer in **Admin > Customers & CRM** using the same email address.
+
+## Payments Without a Payment Processor
+
+Customers click **I Sent a Payment** on an invoice to report a check, cash or bank transfer. Nothing is charged. Staff click **Confirm** or **Reject** in **Admin > Payments**, and only confirmed payments change the invoice.
 
 ## First-Time Admin Promotion
 
@@ -46,7 +57,7 @@ Once you are an admin, you can promote other users to `admin` or `employee` role
 
 ## Database Setup
 
-To apply the necessary table structures, triggers, and RLS policies, run the content of `schema.sql` in the **Supabase SQL Editor**.
+To apply the necessary table structures, triggers, and RLS policies, run `supabase/full-setup.sql` in the **Supabase SQL Editor**.
 
 **Key Security Features:**
 - **Strict Defaults:** The `handle_new_user` trigger ignores any role passed from the frontend and always defaults to `customer`.

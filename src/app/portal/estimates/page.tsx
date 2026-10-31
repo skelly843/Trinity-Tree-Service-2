@@ -41,20 +41,22 @@ export default function CustomerEstimatesPage() {
     loadEstimates()
   }, [])
 
-  const handleApproveEstimate = async (id: string) => {
+  const handleRespond = async (id: string, decision: 'approved' | 'declined') => {
     setUpdating(id)
     setError(null)
     setSuccess(null)
 
-    const { error: updErr } = await supabase
-      .from('estimates')
-      .update({ status: 'approved' })
-      .eq('id', id)
+    const { error: updErr } = await supabase.rpc('customer_respond_to_estimate', {
+      p_estimate_id: id,
+      p_decision: decision
+    })
 
     if (updErr) {
       setError(updErr.message)
     } else {
-      setSuccess('Estimate approved successfully! Our dispatch team will schedule your project shortly.')
+      setSuccess(decision === 'approved'
+        ? 'Estimate approved. We will contact you to schedule the work.'
+        : 'Estimate declined. Thank you for letting us know.')
       loadEstimates()
     }
     setUpdating(null)
@@ -133,14 +135,23 @@ export default function CustomerEstimatesPage() {
                       <p className="text-lg font-black text-slate-900">${Number(est.total || 0).toFixed(2)}</p>
                     </div>
 
-                    {est.status === 'sent' || est.status === 'draft' ? (
-                      <button
-                        onClick={() => handleApproveEstimate(est.id)}
-                        disabled={updating === est.id}
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
-                      >
-                        {updating === est.id ? 'Approving...' : 'Approve Bid'}
-                      </button>
+                    {est.status === 'sent' || est.status === 'viewed' ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleRespond(est.id, 'declined')}
+                          disabled={updating === est.id}
+                          className="border border-slate-200 text-slate-600 hover:bg-slate-50 font-bold text-xs px-4 py-2.5 rounded-xl disabled:opacity-50"
+                        >
+                          Decline
+                        </button>
+                        <button
+                          onClick={() => handleRespond(est.id, 'approved')}
+                          disabled={updating === est.id}
+                          className="bg-green-600 hover:bg-green-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
+                        >
+                          {updating === est.id ? 'Saving...' : 'Approve'}
+                        </button>
+                      </div>
                     ) : (
                       <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
                         est.status === 'approved' || est.status === 'converted'

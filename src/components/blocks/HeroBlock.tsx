@@ -7,15 +7,24 @@ import { ImageCropperModal } from '@/components/admin/ImageCropperModal'
 import { EditableLink } from './shared'
 import type { BlockProps } from './types'
 
+/** Dark text on pale background colors, so the headline stays readable */
+function isLightColor(hex?: string) {
+  if (!hex || !/^#[0-9a-f]{6}$/i.test(hex)) return false
+  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
+  return 0.299 * r + 0.587 * g + 0.114 * b > 165
+}
+
 export default function HeroBlock({ data, editable, update }: BlockProps) {
   const [cropperOpen, setCropperOpen] = useState(false)
   const large = data.variant !== 'compact'
+  const lightBackground = !data.backgroundImage && isLightColor(data.backgroundColor)
 
   return (
     <section
-      className={`relative overflow-hidden bg-slate-900 text-white ${
+      className={`relative overflow-hidden bg-slate-900 ${lightBackground ? 'text-slate-900' : 'text-white'} ${
         large ? 'py-24 lg:py-32 min-h-[480px] flex items-center' : 'py-16'
       }`}
+      style={data.backgroundColor ? { backgroundColor: data.backgroundColor } : undefined}
     >
       {data.backgroundImage && (
         <div className="absolute inset-0 z-0">
@@ -31,7 +40,7 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
             value={data.title || ''}
             onChange={(title) => update({ title })}
             placeholder="Headline"
-            className={`font-extrabold tracking-tight text-white block ${
+            className={`font-extrabold tracking-tight ${lightBackground ? 'text-slate-900' : 'text-white'} block ${
               large ? 'text-4xl md:text-5xl lg:text-6xl leading-tight' : 'text-4xl md:text-5xl'
             }`}
           />
@@ -40,7 +49,9 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
             value={data.subtitle || ''}
             onChange={(subtitle) => update({ subtitle })}
             placeholder="Subtitle"
-            className={`leading-relaxed block ${large ? 'text-base md:text-lg text-slate-300 max-w-2xl' : 'text-lg text-slate-400'}`}
+            className={`leading-relaxed block ${large ? 'text-base md:text-lg max-w-2xl' : 'text-lg'} ${
+              lightBackground ? 'text-slate-700' : large ? 'text-slate-300' : 'text-slate-400'
+            }`}
           />
 
           {(editable || data.ctaText || data.secondaryCtaText) && (
@@ -67,7 +78,11 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
                   })
                 }
                 placeholder="Secondary button"
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-6 py-3.5 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-1.5"
+                className={`px-6 py-3.5 rounded-xl font-bold text-sm inline-flex items-center justify-center gap-1.5 border ${
+                  lightBackground
+                    ? 'bg-slate-900/5 hover:bg-slate-900/10 text-slate-900 border-slate-900/20'
+                    : 'bg-white/10 hover:bg-white/20 text-white border-white/20'
+                }`}
               />
             </div>
           )}
@@ -76,6 +91,25 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
 
       {editable && (
         <div className="absolute bottom-3 right-3 z-20 flex gap-1.5">
+          <label className="px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shadow cursor-pointer">
+            <input
+              type="color"
+              value={data.backgroundColor || '#0f172a'}
+              onChange={(e) => update({ backgroundColor: e.target.value })}
+              className="w-4 h-4 rounded border-0 bg-transparent cursor-pointer"
+              aria-label="Background color"
+            />
+            <span>Background color</span>
+          </label>
+          {data.backgroundColor && (
+            <button
+              type="button"
+              onClick={() => update({ backgroundColor: '' })}
+              className="px-3 py-1.5 bg-slate-800/90 hover:bg-slate-700 text-white text-xs font-bold rounded-lg shadow"
+            >
+              Use theme color
+            </button>
+          )}
           <button
             type="button"
             onClick={() => update({ variant: large ? 'compact' : 'large' })}

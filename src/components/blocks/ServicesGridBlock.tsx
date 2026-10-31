@@ -23,7 +23,7 @@ export default function ServicesGridBlock({ data, editable, update }: BlockProps
           .eq('is_published', true)
           .order('sort_order', { ascending: true })
         if (error) throw error
-        setServices(rows && rows.length > 0 ? rows : FALLBACK_SERVICES)
+        setServices(rows || [])
       } catch (err) {
         console.warn('Failed to fetch services:', err)
         setServices(FALLBACK_SERVICES)
