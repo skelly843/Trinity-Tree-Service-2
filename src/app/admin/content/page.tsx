@@ -29,7 +29,7 @@ import {
 import ImageUpload from '@/components/admin/ImageUpload'
 
 export default function SiteContentPage() {
-  const [activeTab, setActiveTab] = useState<'home' | 'about' | 'contact' | 'navigation' | 'footer' | 'seo' | 'media'>('home')
+  const [activeTab, setActiveTab] = useState<'home' | 'about' | 'contact' | 'navigation' | 'footer' | 'seo' | 'media'>('navigation')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -337,12 +337,12 @@ export default function SiteContentPage() {
     <div className="p-8 space-y-8 max-w-6xl">
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Website Content Editor</h1>
-        <p className="text-slate-500 mt-1">Manage public landing headings, navigation headers, about bios, team pages, media library, and SEO settings live.</p>
+        <p className="text-slate-500 mt-1">Change the top menu links and manage uploaded files. Page content is edited on the page itself.</p>
       </div>
 
       {/* Tabs navigation */}
       <div className="flex flex-wrap border-b border-slate-200 gap-1 bg-white p-1 rounded-xl shadow-sm border">
-        {(['home', 'about', 'contact', 'navigation', 'footer', 'seo', 'media'] as const).map((tab) => (
+        {(['navigation', 'media'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}

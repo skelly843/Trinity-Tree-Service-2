@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useWebsiteBuilder } from '@/context/WebsiteBuilderContext'
+import { isLightColor } from '@/utils/siteTheme'
 import HeroBlock from './HeroBlock'
 import TextImageBlock from './TextImageBlock'
 import FeaturesBlock from './FeaturesBlock'
@@ -44,12 +45,33 @@ export function BlockRenderer({ block }: { block: PageBlock }) {
     ) : null
   }
 
+  const data = (editMode ? block.draft_data : block.published_data) || {}
+  const content = (
+    <Component block={block} data={data} editable={editable} update={(patch) => updateBlockData(block.id, patch)} />
+  )
+
+  // The hero draws its own background
+  const style = data._style
+  if (block.block_type === 'hero' || !style) return content
+
+  const color = /^#[0-9a-f]{6}$/i.test(style.bgColor || '') ? style.bgColor : ''
+  const overlay = style.bgImage ? style.overlay || 'dark' : ''
+  const onDark = overlay === 'dark' || (!style.bgImage && !!color && !isLightColor(color))
+
   return (
-    <Component
-      block={block}
-      data={(editMode ? block.draft_data : block.published_data) || {}}
-      editable={editable}
-      update={(patch) => updateBlockData(block.id, patch)}
-    />
+    <div
+      className={`relative ${onDark ? 'block-on-dark' : ''} ${style.align ? `block-align-${style.align}` : ''} ${
+        style.spacing && style.spacing !== 'normal' ? `block-space-${style.spacing}` : ''
+      }`}
+      style={color ? { backgroundColor: color } : undefined}
+    >
+      {style.bgImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={style.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      )}
+      {overlay === 'dark' && <div className="absolute inset-0 bg-black/55" />}
+      {overlay === 'light' && <div className="absolute inset-0 bg-white/75" />}
+      <div className="relative">{content}</div>
+    </div>
   )
 }

@@ -47,6 +47,15 @@ export const VisualEditorToolbar: React.FC = () => {
   const [showStylesModal, setShowStylesModal] = useState(false)
   const [showBlocksModal, setShowBlocksModal] = useState(false)
 
+  // The dashboard's Brand & Theme link opens this panel directly
+  useEffect(() => {
+    const url = new URL(window.location.href)
+    if (url.searchParams.get('panel') !== 'brand') return
+    setShowStylesModal(true)
+    url.searchParams.delete('panel')
+    window.history.replaceState(null, '', url.pathname + url.search)
+  }, [])
+
   // Publish the toolbar height so body/header can be offset beneath it
   useEffect(() => {
     const root = document.documentElement
