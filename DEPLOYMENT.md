@@ -14,7 +14,7 @@ Configure these environment variables in your hosting provider (e.g., Netlify).
 Each company gets its own Supabase project and its own Netlify site, both built from this repository. Nothing is shared between companies.
 
 1. **Create a Supabase project** for the company.
-2. **Run the migrations** in the Supabase SQL Editor, in order: `supabase/migrations/001_initial_schema.sql`, `002_website_builder.sql`, `003_page_editor.sql`, `004_site_branding.sql`, `005_role_permissions.sql`, `006_storage_buckets.sql`. They start the site with the sample Aquaman text, which the company replaces in the editor.
+2. **Run the migrations** in the Supabase SQL Editor, in order: `supabase/migrations/001_initial_schema.sql`, `002_website_builder.sql`, `003_page_editor.sql`, `004_site_branding.sql`, `005_role_permissions.sql`, `006_storage_buckets.sql`, `007_security_hardening.sql`. Leave **Confirm email** on under Authentication: customer accounts link to their records only after the email is confirmed. The migrations start the site with the sample Aquaman text, which the company replaces in the editor.
 3. **Create a Netlify site** from this repository and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from the company's Supabase project, Settings > API). Add the Stripe keys if the company takes payments.
 4. **Create the company's editor account**: sign up on the new site, then make that account a global admin (see below).
 5. **Brand the site**: sign in, open any public page, click **Edit this page** (bottom right), then:
