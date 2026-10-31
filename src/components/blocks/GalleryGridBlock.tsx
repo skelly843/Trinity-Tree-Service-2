@@ -62,7 +62,7 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
           .eq('is_private', false)
           .order('sort_order', { ascending: true })
         if (error) throw error
-        setItems(rows && rows.length > 0 ? rows : FALLBACK_GALLERY_ITEMS)
+        setItems(rows || [])
       } catch (err) {
         console.warn('Failed to load gallery items:', err)
         setItems(FALLBACK_GALLERY_ITEMS)

@@ -589,113 +589,113 @@ $$;
 create policy "Anyone can read active profile info" on public.profiles for select using (true);
 create policy "Users can update their own profile fields" on public.profiles for update using (auth.uid() = id)
   with check ((role = (select role from public.profiles where id = auth.uid())) or (select role = 'global_admin' from public.profiles where id = auth.uid()));
-create policy "Global admin can do everything on profiles" on public.profiles for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can do everything on profiles" on public.profiles for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- CUSTOMERS
-create policy "Admins can view and edit customers" on public.customers for all using (select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid());
+create policy "Admins can view and edit customers" on public.customers for all using ((select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid()));
 create policy "Customers can view own record" on public.customers for select using (email = (select email from public.profiles where id = auth.uid()));
 
 -- CUSTOMER PROPERTIES
-create policy "Admins can manage all properties" on public.customer_properties for all using (select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid());
+create policy "Admins can manage all properties" on public.customer_properties for all using ((select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid()));
 create policy "Customers can view own properties" on public.customer_properties for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- COMPANY SETTINGS
 create policy "Anyone can read company settings" on public.company_settings for select using (true);
-create policy "Global admin can update company settings" on public.company_settings for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can update company settings" on public.company_settings for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- NAVIGATION ITEMS
 create policy "Anyone can read active navigation" on public.navigation_items for select using (is_active = true);
-create policy "Global admin can manage navigation" on public.navigation_items for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can manage navigation" on public.navigation_items for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- WEBSITE PAGES
 create policy "Anyone can read active website pages" on public.website_pages for select using (is_active = true);
-create policy "Global admin can manage website pages" on public.website_pages for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can manage website pages" on public.website_pages for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- WEBSITE CONTENT BLOCKS
 create policy "Anyone can read active content blocks" on public.website_content_blocks for select using (true);
-create policy "Global admin can manage content blocks" on public.website_content_blocks for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can manage content blocks" on public.website_content_blocks for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- PAGE SECTIONS
 create policy "Anyone can read active sections" on public.page_sections for select using (is_active = true);
-create policy "Global admin can manage page sections" on public.page_sections for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admin can manage page sections" on public.page_sections for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- SERVICE CATEGORIES
 create policy "Anyone can read service categories" on public.service_categories for select using (true);
-create policy "Admins can manage service categories" on public.service_categories for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage service categories" on public.service_categories for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- SERVICES
 create policy "Anyone can read published services" on public.services for select using (is_published = true or (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
-create policy "Admins can manage services" on public.services for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage services" on public.services for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- GALLERY ALBUMS
 create policy "Anyone can read gallery albums" on public.gallery_albums for select using (true);
-create policy "Admins can manage gallery albums" on public.gallery_albums for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage gallery albums" on public.gallery_albums for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- GALLERY ITEMS
 create policy "Anyone can read public published gallery items" on public.gallery_items for select
   using ((is_published = true and is_private = false) or (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()) or (is_private = true and customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid()))));
-create policy "Admins can manage gallery items" on public.gallery_items for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage gallery items" on public.gallery_items for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- CONTACT SUBMISSIONS
 create policy "Anyone can insert contact submissions" on public.contact_submissions for insert with check (true);
-create policy "Admins can view and edit submissions" on public.contact_submissions for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can view and edit submissions" on public.contact_submissions for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- SERVICE REQUESTS
 create policy "Anyone can submit service requests" on public.service_requests for insert with check (true);
 create policy "Users can view own service requests" on public.service_requests for select using (email = (select email from public.profiles where id = auth.uid()) or customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
-create policy "Admins can manage service requests" on public.service_requests for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage service requests" on public.service_requests for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- APPOINTMENTS
-create policy "Admins can manage appointments" on public.appointments for all using (select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid());
+create policy "Admins can manage appointments" on public.appointments for all using ((select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid()));
 create policy "Customers can read own appointments" on public.appointments for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- JOBS
-create policy "Admins can manage all jobs" on public.jobs for all using (select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid());
+create policy "Admins can manage all jobs" on public.jobs for all using ((select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid()));
 create policy "Customers can read own jobs" on public.jobs for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- NOTES
-create policy "Admins can manage all notes" on public.notes for all using (select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid());
+create policy "Admins can manage all notes" on public.notes for all using ((select role in ('global_admin', 'admin', 'employee') from public.profiles where id = auth.uid()));
 create policy "Customers can view customer visible notes related to them" on public.notes for select using (visibility = 'customer_visible' and customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- ESTIMATES
-create policy "Admins can manage estimates" on public.estimates for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage estimates" on public.estimates for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view own estimates" on public.estimates for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- ESTIMATE ITEMS
-create policy "Admins can manage estimate items" on public.estimate_items for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage estimate items" on public.estimate_items for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view own estimate items" on public.estimate_items for select using (exists (select 1 from public.estimates where estimates.id = estimate_items.estimate_id and estimates.customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid()))));
 
 -- INVOICES
-create policy "Admins can manage invoices" on public.invoices for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage invoices" on public.invoices for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view own invoices" on public.invoices for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- INVOICE ITEMS
-create policy "Admins can manage invoice items" on public.invoice_items for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage invoice items" on public.invoice_items for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view own invoice items" on public.invoice_items for select using (exists (select 1 from public.invoices where invoices.id = invoice_items.invoice_id and invoices.customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid()))));
 
 -- PAYMENTS
-create policy "Admins can manage payments" on public.payments for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage payments" on public.payments for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can read own payments" on public.payments for select using (customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- RECEIPTS
-create policy "Global admins can manage all receipts" on public.receipts for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
-create policy "Admins can manage receipts" on public.receipts for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Global admins can manage all receipts" on public.receipts for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
+create policy "Admins can manage receipts" on public.receipts for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view visible receipts" on public.receipts for select using (is_visible_to_customer = true and customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- EXPENSES
-create policy "Only global admins can manage all expenses" on public.expenses for all using (select role = 'global_admin' from public.profiles where id = auth.uid());
-create policy "Admins can manage job-related expenses" on public.expenses for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Only global admins can manage all expenses" on public.expenses for all using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
+create policy "Admins can manage job-related expenses" on public.expenses for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 
 -- DOCUMENTS
-create policy "Admins can manage documents" on public.documents for all using (select role in ('global_admin', 'admin') from public.profiles where id = auth.uid());
+create policy "Admins can manage documents" on public.documents for all using ((select role in ('global_admin', 'admin') from public.profiles where id = auth.uid()));
 create policy "Customers can view shared documents" on public.documents for select using (is_private_customer = false and customer_id = (select id from public.customers where email = (select email from public.profiles where id = auth.uid())));
 
 -- NOTIFICATIONS
 create policy "Users can manage own notifications" on public.notifications for all using (recipient_id = auth.uid() or recipient_role = (select role from public.profiles where id = auth.uid()));
 
 -- AUDIT LOGS
-create policy "Global admins can view audit logs" on public.audit_logs for select using (select role = 'global_admin' from public.profiles where id = auth.uid());
-create policy "Global admins can create audit logs" on public.audit_logs for insert with check (select role = 'global_admin' from public.profiles where id = auth.uid());
+create policy "Global admins can view audit logs" on public.audit_logs for select using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
+create policy "Global admins can create audit logs" on public.audit_logs for insert with check ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 
 -- ==========================================

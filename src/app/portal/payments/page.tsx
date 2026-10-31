@@ -84,9 +84,16 @@ export default function CustomerPaymentsPage() {
                     </div>
                   </div>
 
-                  <span className="text-lg font-black text-green-600 shrink-0">
-                    +${Number(p.amount || 0).toFixed(2)}
-                  </span>
+                  <div className="text-right shrink-0">
+                    <p className={`text-lg font-black ${p.status === 'confirmed' ? 'text-green-600' : 'text-slate-400'}`}>
+                      +${Number(p.amount || 0).toFixed(2)}
+                    </p>
+                    {p.status !== 'confirmed' && (
+                      <p className="text-xs font-bold text-slate-500">
+                        {p.status === 'pending' ? 'Waiting for office review' : 'Not accepted'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               ))}
               {payments.length === 0 && (

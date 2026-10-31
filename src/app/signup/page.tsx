@@ -61,7 +61,7 @@ export default function SignupPage() {
           </div>
           <h1 className="text-3xl font-extrabold mb-4 text-slate-900">Check your email</h1>
           <p className="text-slate-600 leading-relaxed">
-            We've sent a verification link to <span className="font-bold text-slate-900">{email}</span>. Please click the link to activate your account.
+            We've sent a verification link to <span className="font-bold text-slate-900">{email}</span>. Please click the link to confirm your email. Our office will then approve your account before you can use the portal.
           </p>
           <a href="/login" className="mt-8 inline-block font-bold text-blue-600 hover:text-blue-700 transition-colors">
             Return to Login

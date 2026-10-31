@@ -17,6 +17,35 @@ export default function AdminAccountsPage() {
   const [inviteRole, setInviteRole] = useState('admin')
   const [inviting, setInviting] = useState(false)
 
+  const [customerAccounts, setCustomerAccounts] = useState<any[]>([])
+
+  const loadCustomerAccounts = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, is_active, created_at')
+      .eq('role', 'customer')
+      .order('is_active', { ascending: true })
+      .order('created_at', { ascending: false })
+    setCustomerAccounts(data || [])
+  }
+
+  const handleSetCustomerAccess = async (userId: string, approved: boolean) => {
+    setError(null)
+    setSuccess(null)
+
+    const { error: updateErr } = await supabase
+      .from('profiles')
+      .update({ is_active: approved })
+      .eq('id', userId)
+
+    if (updateErr) {
+      setError(updateErr.message)
+    } else {
+      setSuccess(approved ? 'Customer account approved.' : 'Customer account access removed.')
+      loadCustomerAccounts()
+    }
+  }
+
   const loadUsers = async () => {
     setLoading(true)
     // Fetch profiles that belong to administrative roles: 'global_admin', 'admin', 'employee'
@@ -36,6 +65,7 @@ export default function AdminAccountsPage() {
 
   useEffect(() => {
     loadUsers()
+    loadCustomerAccounts()
   }, [])
 
   const handleUpdateRole = async (userId: string, newRole: string) => {
@@ -122,7 +152,47 @@ export default function AdminAccountsPage() {
     <div className="p-8 space-y-8">
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Accounts</h1>
-        <p className="text-slate-500 mt-1">Manage global admins, regional admins, and employee credentials.</p>
+        <p className="text-slate-500 mt-1">Approve customer logins and manage global admins, regional admins, and employee credentials.</p>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h2 className="font-bold text-slate-800 flex items-center">
+            <UserCheck size={18} className="mr-2 text-slate-400" />
+            Customer Logins
+          </h2>
+          <span className="text-xs font-bold text-amber-700">
+            {customerAccounts.filter((c) => !c.is_active).length} waiting for approval
+          </span>
+        </div>
+        <div className="divide-y divide-slate-50">
+          {customerAccounts.map((account) => (
+            <div key={account.id} className="px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="font-bold text-slate-800">{account.full_name || 'Unnamed customer'}</p>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">{account.email}</p>
+              </div>
+              {account.is_active ? (
+                <button
+                  onClick={() => handleSetCustomerAccess(account.id, false)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border text-red-600 bg-red-50 border-red-100 hover:bg-red-100"
+                >
+                  Remove Access
+                </button>
+              ) : (
+                <button
+                  onClick={() => handleSetCustomerAccess(account.id, true)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border text-green-600 bg-green-50 border-green-100 hover:bg-green-100"
+                >
+                  Approve
+                </button>
+              )}
+            </div>
+          ))}
+          {customerAccounts.length === 0 && (
+            <p className="px-6 py-10 text-center text-slate-400 italic text-sm">No customer logins yet.</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

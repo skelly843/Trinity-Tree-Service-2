@@ -11,6 +11,7 @@ export default function CustomerInvoicesPage() {
   const [invoices, setInvoices] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [paying, setPaying] = useState<string | null>(null)
+  const [report, setReport] = useState<{ invoiceId: string; amount: string; method: string; reference: string } | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,42 +42,32 @@ export default function CustomerInvoicesPage() {
     loadInvoices()
   }, [])
 
-  const handleSimulatePayment = async (id: string, total: number) => {
-    setPaying(id)
+  const balanceOf = (inv: any) => Math.max(Number(inv.total || 0) - Number(inv.amount_paid || 0), 0)
+
+  const handleOpenReport = (inv: any) => {
     setError(null)
     setSuccess(null)
+    setReport({ invoiceId: inv.id, amount: balanceOf(inv).toFixed(2), method: 'check', reference: '' })
+  }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    const { data: customer } = await supabase
-      .from('customers')
-      .select('id')
-      .eq('email', user?.email || '')
-      .limit(1)
-      .maybeSingle()
+  const handleReportPayment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!report) return
+    setPaying(report.invoiceId)
+    setError(null)
 
-    // 1. Record payment in database
-    const { error: payErr } = await supabase
-      .from('payments')
-      .insert([
-        {
-          customer_id: customer?.id,
-          invoice_id: id,
-          amount: total,
-          payment_method: 'stripe',
-          reference_number: `SIM-STRIPE-${Math.random().toString(36).substring(2,10).toUpperCase()}`
-        }
-      ])
+    const { error: payErr } = await supabase.rpc('customer_report_payment', {
+      p_invoice_id: report.invoiceId,
+      p_amount: Number(report.amount),
+      p_method: report.method,
+      p_reference: report.reference
+    })
 
     if (payErr) {
       setError(payErr.message)
     } else {
-      // 2. Update invoice status to paid
-      await supabase
-        .from('invoices')
-        .update({ status: 'paid', amount_paid: total })
-        .eq('id', id)
-
-      setSuccess('Payment processed successfully! Thank you for your business.')
+      setSuccess('Thank you. Your invoice will update once our office confirms the payment.')
+      setReport(null)
       loadInvoices()
     }
     setPaying(null)
@@ -143,17 +134,16 @@ export default function CustomerInvoicesPage() {
 
                   <div className="flex items-center gap-4 shrink-0 self-end sm:self-center">
                     <div className="text-right">
-                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Amount</p>
-                      <p className="text-lg font-black text-slate-900">${Number(inv.total || inv.amount).toFixed(2)}</p>
+                      <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">Balance</p>
+                      <p className="text-lg font-black text-slate-900">${balanceOf(inv).toFixed(2)}</p>
                     </div>
 
-                    {inv.status === 'unpaid' || inv.status === 'sent' || inv.status === 'draft' ? (
+                    {inv.status === 'sent' || inv.status === 'partial' || inv.status === 'overdue' ? (
                       <button
-                        onClick={() => handleSimulatePayment(inv.id, Number(inv.total || inv.amount))}
-                        disabled={paying === inv.id}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
+                        onClick={() => handleOpenReport(inv)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md"
                       >
-                        {paying === inv.id ? 'Paying...' : 'Pay Online'}
+                        I Sent a Payment
                       </button>
                     ) : (
                       <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
@@ -176,6 +166,60 @@ export default function CustomerInvoicesPage() {
           </div>
         )}
       </main>
+
+      {report && (
+        <div className="fixed inset-0 bg-slate-900/40 flex items-center justify-center p-6 z-50">
+          <form onSubmit={handleReportPayment} className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full p-6 space-y-4">
+            <div>
+              <h2 className="text-xl font-bold text-slate-900">Tell us about your payment</h2>
+              <p className="text-sm text-slate-500 mt-1">This does not charge you. It lets our office know a payment is on its way.</p>
+            </div>
+            <label className="block space-y-1 text-sm font-medium text-slate-700">
+              <span>Amount ($)</span>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                required
+                value={report.amount}
+                onChange={(e) => setReport({ ...report, amount: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </label>
+            <label className="block space-y-1 text-sm font-medium text-slate-700">
+              <span>How did you pay?</span>
+              <select
+                value={report.method}
+                onChange={(e) => setReport({ ...report, method: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="check">Check</option>
+                <option value="cash">Cash</option>
+                <option value="bank_transfer">Bank transfer</option>
+                <option value="other">Other</option>
+              </select>
+            </label>
+            <label className="block space-y-1 text-sm font-medium text-slate-700">
+              <span>Check or reference number (optional)</span>
+              <input
+                type="text"
+                value={report.reference}
+                onChange={(e) => setReport({ ...report, reference: e.target.value })}
+                className="w-full px-3 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </label>
+            {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
+            <div className="flex justify-between pt-2">
+              <button type="button" onClick={() => setReport(null)} className="px-4 py-2 border border-slate-200 rounded-xl font-bold text-slate-600 text-sm">
+                Cancel
+              </button>
+              <button type="submit" disabled={paying !== null} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50">
+                {paying ? 'Sending...' : 'Send to Office'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   )
 }

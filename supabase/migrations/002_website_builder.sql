@@ -52,18 +52,18 @@ alter table public.content_revisions enable row level security;
 -- GLOBAL STYLES
 create policy "Anyone can read global styles" on public.global_styles for select using (true);
 create policy "Only global admins can update global styles" on public.global_styles for all
-  using (select role = 'global_admin' from public.profiles where id = auth.uid());
+  using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- PAGE BLOCKS
 create policy "Anyone can read page blocks" on public.page_blocks for select using (true);
 create policy "Only global admins can manage page blocks" on public.page_blocks for all
-  using (select role = 'global_admin' from public.profiles where id = auth.uid());
+  using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 -- CONTENT REVISIONS
 create policy "Only global admins can select revisions" on public.content_revisions for select
-  using (select role = 'global_admin' from public.profiles where id = auth.uid());
+  using ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 create policy "Only global admins can insert revisions" on public.content_revisions for insert
-  with check (select role = 'global_admin' from public.profiles where id = auth.uid());
+  with check ((select role = 'global_admin' from public.profiles where id = auth.uid()));
 
 
 -- ==========================================
