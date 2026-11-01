@@ -4,11 +4,10 @@ import { useState } from 'react'
 
 interface PayButtonProps {
   invoiceId: string
-  amount: number
-  status: string
+  onError: (message: string) => void
 }
 
-export default function PayButton({ invoiceId, amount, status }: PayButtonProps) {
+export default function PayButton({ invoiceId, onError }: PayButtonProps) {
   const [loading, setLoading] = useState(false)
 
   const handlePay = async () => {
@@ -26,27 +25,23 @@ export default function PayButton({ invoiceId, amount, status }: PayButtonProps)
       if (data.url) {
         window.location.href = data.url
       } else {
-        alert('Failed to initiate payment')
+        onError(data.error || 'Failed to initiate payment')
       }
     } catch (error) {
       console.error('Payment error:', error)
-      alert('An error occurred')
+      onError('An error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
-  }
-
-  if (status === 'paid') {
-    return <span className="text-gray-400">Paid</span>
   }
 
   return (
     <button
       onClick={handlePay}
       disabled={loading}
-      className="text-blue-600 hover:text-blue-900 font-bold disabled:opacity-50"
+      className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md disabled:opacity-50"
     >
-      {loading ? 'Processing...' : 'Pay Now'}
+      {loading ? 'Processing...' : 'Pay by Card'}
     </button>
   )
 }

@@ -5,6 +5,10 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { Droplet, ArrowLeft, Loader2, FileText, CheckCircle2, AlertCircle } from 'lucide-react'
+import PayButton from '@/components/PayButton'
+
+// Only sites with Stripe keys offer card payments
+const CARD_PAYMENTS_ENABLED = !!process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
 
 export default function CustomerInvoicesPage() {
   const supabase = createClient()
@@ -40,6 +44,11 @@ export default function CustomerInvoicesPage() {
 
   useEffect(() => {
     loadInvoices()
+
+    // Stripe sends customers back here, usually just before the invoice updates
+    if (new URLSearchParams(window.location.search).get('success') === 'true') {
+      setSuccess('Thank you. Your card payment went through, and your invoice will update in a moment.')
+    }
   }, [])
 
   const balanceOf = (inv: any) => Math.max(Number(inv.total || 0) - Number(inv.amount_paid || 0), 0)
@@ -139,12 +148,15 @@ export default function CustomerInvoicesPage() {
                     </div>
 
                     {inv.status === 'sent' || inv.status === 'partial' || inv.status === 'overdue' ? (
-                      <button
-                        onClick={() => handleOpenReport(inv)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-md"
-                      >
-                        I Sent a Payment
-                      </button>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        {CARD_PAYMENTS_ENABLED && <PayButton invoiceId={inv.id} onError={setError} />}
+                        <button
+                          onClick={() => handleOpenReport(inv)}
+                          className="bg-white hover:bg-slate-50 text-blue-600 border border-blue-200 font-bold text-xs px-4 py-2.5 rounded-xl transition-all"
+                        >
+                          I Sent a Payment
+                        </button>
+                      </div>
                     ) : (
                       <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full border ${
                         inv.status === 'paid'

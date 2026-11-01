@@ -16,7 +16,7 @@ Each company gets its own Supabase project and its own Netlify site, both built 
 1. **Create a Supabase project** for the company.
 2. **Set up the database** in the Supabase SQL Editor: run all of `supabase/full-setup.sql`. Then edit the business name and contact values at the top of `supabase/new-company-start.sql` and run that once. It clears the sample services and gallery and replaces the sample business name. Never run it on a site in use.
 3. **Check Authentication settings** in Supabase. Leave **Confirm email** on: customer accounts link to their records only after the email is confirmed. Set **Site URL** to the company's web address so confirmation emails link to the right site. Add custom email sending (SMTP) before going live, because Supabase's built-in email is limited to a few messages an hour.
-4. **Create a Netlify site** from this repository and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from the company's Supabase project, Settings > API). Add the Stripe keys if the company takes card payments. Set the production branch to the repository's default branch.
+4. **Create a Netlify site** from this repository and set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` (from the company's Supabase project, Settings > API). Add the Stripe settings below if the company takes card payments. Set the production branch to the repository's default branch.
 5. **Create the global admin accounts**: sign up on the new site with your account and the business owner's, then make both global admins (see below).
 6. **Brand the site**: sign in, open any public page, click **Edit this page** (bottom right), then:
    - **Brand & Theme** in the toolbar: business name, logo, browser tab icon, colors, fonts, corner style, footer text and search-engine title/description. Click **Save brand & theme**.
@@ -28,6 +28,21 @@ When a migration is added to `supabase/migrations`, run that one file on each ex
 ## Customer Accounts
 
 New customer accounts must confirm their email, then wait for a global admin. Approve them in **Admin > Admin Accounts > Customer Logins**. To connect an account to its records, add a customer in **Admin > Customers & CRM** using the same email address.
+
+## Card Payments With Stripe
+
+Customers see **Pay by Card** on their invoices once these are set on the Netlify site. Without them, the site works normally and the button stays hidden.
+
+| Variable Name | Description |
+| :--- | :--- |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe publishable key. Also turns on the **Pay by Card** button. |
+| `STRIPE_SECRET_KEY` | Stripe secret key. Keep it private. |
+| `STRIPE_WEBHOOK_SECRET` | Signing secret from the webhook below. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key (Settings > API). Keep it private, and never give it a `NEXT_PUBLIC_` name. |
+
+In Stripe, add a webhook pointing to `https://<site address>/api/stripe/webhook` that sends the `checkout.session.completed` event, and copy its signing secret. The webhook is what marks an invoice as paid, so a card payment will not show on the invoice until it is set up. Redeploy the site after adding these. Test with Stripe's test keys before going live.
+
+On an existing project, run `supabase/migrations/010_stripe_payment_guard.sql` first.
 
 ## Payments Without a Payment Processor
 

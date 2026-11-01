@@ -14,6 +14,7 @@ When deploying to Netlify, you must configure the following environment variable
 *   **`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`**: Your Stripe publishable key.
 *   **`STRIPE_SECRET_KEY`**: Your Stripe secret key (keep this private).
 *   **`STRIPE_WEBHOOK_SECRET`**: Your Stripe webhook signing secret.
+*   **`SUPABASE_SERVICE_ROLE_KEY`**: Your Supabase service role key (keep this private). The webhook uses it to record card payments.
 
 ---
 
