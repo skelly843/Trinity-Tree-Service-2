@@ -9,14 +9,18 @@ import { VisualEditorToolbar } from '@/components/admin/VisualEditorToolbar'
 import GlobalEditorButton from '@/components/admin/GlobalEditorButton'
 import { loadSiteBrand } from '@/utils/supabase/loadSiteBrand'
 
+// Geist is only used when picked in Brand & Theme (and for code-style text), so it is not
+// preloaded: a preload holds back the first paint of every page.
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  preload: false,
 });
 
 export async function generateMetadata(): Promise<Metadata> {
