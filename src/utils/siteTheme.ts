@@ -22,10 +22,10 @@ export interface SiteBrand {
 }
 
 export const DEFAULT_BRAND: SiteBrand = {
-  site_name: 'Aquaman',
-  footer_name: 'Aquaman Plumbing & Contracting',
-  footer_tagline: 'Expert plumbing, water heater installations, drain cleaning, and general contracting remodeling.',
-  copyright_text: '© {year} Aquaman Services Inc. All rights reserved.',
+  site_name: 'TrinityEnterprise',
+  footer_name: 'TrinityEnterprise',
+  footer_tagline: '',
+  copyright_text: '© {year} TrinityEnterprise. All rights reserved.',
   logo_url: '',
   favicon_url: '',
   primary_color: '#2563eb',
@@ -33,8 +33,8 @@ export const DEFAULT_BRAND: SiteBrand = {
   heading_font: 'default',
   body_font: 'default',
   border_radius: 'default',
-  seo_title: 'Aquaman Plumbing & General Contracting',
-  seo_description: 'Expert plumbing, water heater installations, drain cleaning, and general contracting remodeling.'
+  seo_title: 'TrinityEnterprise',
+  seo_description: ''
 }
 
 export const FONT_OPTIONS: { value: string; label: string; stack: string; google?: string }[] = [

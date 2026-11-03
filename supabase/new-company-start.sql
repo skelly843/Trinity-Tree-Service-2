@@ -6,8 +6,8 @@
 
 do $$
 declare
-  v_short_name text := 'New Business';
-  v_company_name text := 'New Business LLC';
+  v_short_name text := 'TrinityEnterprise';
+  v_company_name text := 'TrinityEnterprise';
   v_phone text := '';
   v_email text := '';
   v_address text := '';

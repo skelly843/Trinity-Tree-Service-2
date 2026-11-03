@@ -1,4 +1,4 @@
-# Aquaman Business Management Portal
+# TrinityEnterprise Business Management Portal
 
 A secure service management platform built with Next.js, Supabase, and Stripe.
 
