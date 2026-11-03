@@ -12,14 +12,14 @@ export default function AdminSettingsPage() {
   const [success, setSuccess] = useState(false)
 
   const [settings, setSettings] = useState({
-    company_name: 'Aquaman Plumbing & General Contracting',
-    phone: '1-800-555-PLUM',
-    email: 'contact@aquamanservices.com',
-    address: '123 Waterway Ln, Ocean City, CA 90210',
-    emergency_service_notice: 'Our dispatch team is on-call 24/7 for burst pipes, water heater failure & active sewer backups.',
-    service_areas: ['Ocean City', 'Beverly Hills', 'Malibu', 'Santa Monica'],
-    seo_title: 'Aquaman Plumbing & Contracting | Professional Plumbers',
-    seo_description: 'Expert plumbing, drain cleaning, kitchen & bathroom remodeling, and general contracting services.',
+    company_name: 'Trinity Enterprise Tree Services',
+    phone: '(254) 338-8140',
+    email: 'jessienichols01@gmail.com',
+    address: '',
+    emergency_service_notice: '',
+    service_areas: [] as string[],
+    seo_title: 'Trinity Enterprise Tree Services',
+    seo_description: 'Tree removal, trimming, stump grinding and storm cleanup. For all your tree service needs.',
   })
 
   useEffect(() => {

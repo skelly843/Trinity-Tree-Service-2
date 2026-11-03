@@ -4,9 +4,9 @@
       "block_type": "hero",
       "data": {
         "variant": "large",
-        "title": "Premium Plumbing & General Contracting",
-        "subtitle": "Expert maintenance, urgent emergency dispatch, and custom remodeling services at your fingertips. Manage operations through our live client portal.",
-        "ctaText": "Book a Service",
+        "title": "For All Your Tree Service Needs",
+        "subtitle": "Tree removal, trimming, stump grinding and storm cleanup from Trinity Enterprise. Request service online and track your job through our client portal.",
+        "ctaText": "Request Service",
         "ctaUrl": "/request-service",
         "secondaryCtaText": "View Our Work",
         "secondaryCtaUrl": "/gallery",
@@ -16,28 +16,40 @@
     {
       "block_type": "features",
       "data": {
-        "title": "Why Aquaman Contracting is Rated #1",
-        "subtitle": "Our primary design values",
+        "title": "Why Choose Trinity Enterprise",
+        "subtitle": "Careful work, clear pricing and a clean yard when we leave.",
         "items": [
-          { "icon": "shield", "title": "Licensed & Fully Insured", "desc": "Our technicians are certified plumbing engineers and General B contractors who respect your property." },
-          { "icon": "calendar", "title": "State-of-the-Art Scheduling", "desc": "Book, adjust, pay invoices, and review high-resolution project files instantly via our premium client portal." },
-          { "icon": "dollar", "title": "Fixed, Transparent Pricing", "desc": "Enjoy absolute cost certainty. We compile comprehensive upfront estimates with line-by-line transparency." }
+          {
+            "icon": "shield",
+            "title": "Safe, Careful Work",
+            "desc": "We take down and trim trees with care for your home, fences, power lines and landscaping."
+          },
+          {
+            "icon": "calendar",
+            "title": "Easy Scheduling",
+            "desc": "Request service, approve estimates and pay invoices online through our client portal."
+          },
+          {
+            "icon": "dollar",
+            "title": "Clear, Upfront Pricing",
+            "desc": "You get a written estimate before any work starts, so there are no surprises."
+          }
         ]
       }
     },
     {
       "block_type": "services_grid",
       "data": {
-        "title": "Our Services",
-        "subtitle": "Professional plumbing and general contracting solutions for residential & commercial needs.",
+        "title": "Our Tree Services",
+        "subtitle": "Residential and commercial tree care, from a single limb to a full lot.",
         "limit": 6
       }
     },
     {
       "block_type": "cta_banner",
       "data": {
-        "title": "Have a leak, clog, or remodel in mind?",
-        "body": "Tell us what's going on and our dispatch team will get back to you fast.",
+        "title": "Got a tree that needs to come down?",
+        "body": "Tell us about the job and we will get back to you with an estimate.",
         "buttonText": "Request Service",
         "buttonUrl": "/request-service"
       }
@@ -48,8 +60,8 @@
       "block_type": "hero",
       "data": {
         "variant": "compact",
-        "title": "About Aquaman Plumbing & General Contracting",
-        "subtitle": "Providing high-quality plumbing and contracting services with integrity, reliability, and precision.",
+        "title": "About Trinity Enterprise",
+        "subtitle": "Dependable tree services for homes and businesses.",
         "ctaText": "",
         "ctaUrl": "",
         "secondaryCtaText": "",
@@ -60,9 +72,9 @@
     {
       "block_type": "text_image",
       "data": {
-        "title": "Our Story & Mission",
-        "body": "Founded with a commitment to premium craftsmanship, Aquaman has grown from a local plumbing team into a premier general contracting firm. We specialize in handling complex residential and commercial water systems, high-efficiency upgrades, custom bathroom & kitchen remodeling, and general maintenance.",
-        "quote": "Our mission is to safeguard our clients' homes and commercial investments by delivering robust plumbing engineering, professional project management, and completely transparent pricing on every job.",
+        "title": "Our Story",
+        "body": "Trinity Enterprise is a tree service company owned and run by Jessie Nichols. We remove, trim and clean up trees for homeowners and businesses, and we treat every property like it is our own.",
+        "quote": "For all your tree service needs, we are just a call away.",
         "image_url": "",
         "image_side": "right"
       }
@@ -70,36 +82,44 @@
     {
       "block_type": "features",
       "data": {
-        "title": "Why Homeowners Trust Us",
+        "title": "Why Customers Trust Us",
         "subtitle": "",
         "items": [
-          { "icon": "check", "title": "Licensed & Insured", "desc": "Licensed & insured plumbing and contracting experts." },
-          { "icon": "calendar", "title": "Digital Client Portal", "desc": "Comprehensive scheduling & digital client portal tracking." },
-          { "icon": "wrench", "title": "Advanced Diagnostics", "desc": "Advanced hydro-jetting, drain camera scans, and leak diagnostics." },
-          { "icon": "clock", "title": "24/7 Emergency Support", "desc": "24/7 emergency support for pipe bursts, backups & failures." }
-        ]
-      }
-    },
-    {
-      "block_type": "features",
-      "data": {
-        "title": "Licenses & Accreditations",
-        "subtitle": "",
-        "items": [
-          { "icon": "shield", "title": "Licensed Plumber", "desc": "Fully compliant with California State Licensing Board regulations." },
-          { "icon": "award", "title": "General B Contractor", "desc": "Qualified to execute structural alterations, plumbing upgrades & framing." },
-          { "icon": "droplet", "title": "Water Treatment Certified", "desc": "Specialized in filtration systems, leak detection & pool diagnostics." }
+          {
+            "icon": "check",
+            "title": "Owner on the Job",
+            "desc": "You deal directly with the owner from estimate to cleanup."
+          },
+          {
+            "icon": "calendar",
+            "title": "Online Client Portal",
+            "desc": "See your estimates, jobs and invoices in one place."
+          },
+          {
+            "icon": "wrench",
+            "title": "The Right Equipment",
+            "desc": "The tools to handle tall trees, tight spaces and big stumps."
+          },
+          {
+            "icon": "clock",
+            "title": "Storm Cleanup",
+            "desc": "Fast help clearing fallen trees and limbs after a storm."
+          }
         ]
       }
     },
     {
       "block_type": "team",
       "data": {
-        "title": "Meet Our Leadership Team",
+        "title": "Meet the Owner",
         "subtitle": "",
         "members": [
-          { "name": "David \"Aquaman\" Carter", "role": "Founder & Master Plumber", "bio": "Over 15 years of complex water treatment & mechanical engineering experience.", "photo": "" },
-          { "name": "Marcus Rodriguez", "role": "Lead Contracting Estimator", "bio": "Expert in structural design, kitchen remodeling, and customer logistics.", "photo": "" }
+          {
+            "name": "Jessie Nichols",
+            "role": "Owner",
+            "bio": "Office: (254) 338-8140 · Cell: (254) 220-3195",
+            "photo": ""
+          }
         ]
       }
     }
@@ -110,7 +130,7 @@
       "data": {
         "variant": "compact",
         "title": "Our Services",
-        "subtitle": "Professional plumbing and general contracting solutions designed for residential & commercial needs.",
+        "subtitle": "Tree removal, trimming, stump grinding and cleanup for residential and commercial properties.",
         "ctaText": "",
         "ctaUrl": "",
         "secondaryCtaText": "",
@@ -129,8 +149,8 @@
     {
       "block_type": "cta_banner",
       "data": {
-        "title": "Not sure which service you need?",
-        "body": "Describe the problem and we'll recommend the right fix.",
+        "title": "Not sure what your trees need?",
+        "body": "Describe the job and we will recommend the right service.",
         "buttonText": "Contact Us",
         "buttonUrl": "/contact"
       }
@@ -142,7 +162,7 @@
       "data": {
         "variant": "compact",
         "title": "Project Gallery",
-        "subtitle": "Explore our professional plumbing installations, bathroom transformations, and general contracting work.",
+        "subtitle": "Take a look at some of our recent tree removal, trimming and cleanup jobs.",
         "ctaText": "",
         "ctaUrl": "",
         "secondaryCtaText": "",
@@ -164,7 +184,7 @@
       "data": {
         "variant": "compact",
         "title": "Contact Us",
-        "subtitle": "Got a plumbing emergency, leak, or custom home remodel? Get in touch with our certified engineers today.",
+        "subtitle": "Have a tree that needs removing, trimming or cleaning up? Get in touch with Trinity Enterprise today.",
         "ctaText": "",
         "ctaUrl": "",
         "secondaryCtaText": "",
@@ -176,7 +196,7 @@
       "block_type": "contact_info",
       "data": {
         "title": "Get in Touch",
-        "body": "Complete the quick contact form or reach out directly. We respond to all non-emergency inquiries within 2 hours."
+        "body": "Fill out the contact form or call the office at (254) 338-8140."
       }
     },
     {
@@ -195,7 +215,7 @@
       "data": {
         "variant": "compact",
         "title": "Book / Request a Service",
-        "subtitle": "Please fill out the form below. Once submitted, our dispatch coordinators will contact you to finalize the schedule.",
+        "subtitle": "Tell us about your trees and the work you need. We will contact you to schedule an estimate.",
         "ctaText": "",
         "ctaUrl": "",
         "secondaryCtaText": "",

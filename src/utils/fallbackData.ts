@@ -27,97 +27,70 @@ export interface FallbackGalleryItem {
 export const FALLBACK_SERVICES: FallbackService[] = [
   {
     id: 'f-1',
-    title: 'Emergency Plumbing Services',
-    slug: 'emergency-plumbing',
-    short_description: 'Rapid-response diagnostic and resolution for active burst pipes, sewer back-ups, and severe leaks 24/7.',
-    full_description: 'When plumbing failures threaten your property, our emergency responders dispatch immediately. Equipped with advanced cameras, heavy-duty rooters, and premium replacement components, we restore safety and functionality to your drainage and supply networks in record time.',
-    price_range: 'Starting at $149',
+    title: 'Tree Removal',
+    slug: 'tree-removal',
+    short_description: 'Safe removal of dead, damaged or unwanted trees of any size.',
+    full_description: 'Whether a tree is dead, leaning toward your house or simply in the way, we take it down in sections when needed to protect your home, fences and landscaping, then haul the wood and debris away.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 1
   },
   {
     id: 'f-2',
-    title: 'Water Heater Installation & Repair',
-    slug: 'water-heater-services',
-    short_description: 'Professional tank and tankless system diagnostics, maintenance, and ultra-efficient replacements.',
-    full_description: 'Struggling with inconsistent hot water? Our certified plumbers provide meticulous diagnostics for conventional gas/electric reservoirs as well as high-efficiency tankless units. We optimize flow rates, purge sediment buildup, and ensure total code compliance on all replacements.',
-    price_range: 'Starting at $199',
+    title: 'Tree Trimming & Pruning',
+    slug: 'tree-trimming-pruning',
+    short_description: 'Shape trees, clear overhanging limbs and keep branches off your roof and lines.',
+    full_description: 'Regular trimming keeps trees healthy and your property safe. We remove dead and crossing branches, raise canopies over driveways and roofs, and thin trees so they stand up better to wind.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 2
   },
   {
     id: 'f-3',
-    title: 'Drain Cleaning & Hydro-Jetting',
-    slug: 'drain-cleaning-hydro-jetting',
-    short_description: 'Clear structural blockages and restore pristine drain velocity with high-pressure hydro-jet solutions.',
-    full_description: 'Grease, scale, and root intrusions are no match for our precision high-velocity water jets. We scrub internal pipe walls to bare metal without the use of corrosive chemicals, keeping your lines performing perfectly for years to come.',
-    price_range: 'Starting at $120',
+    title: 'Stump Grinding',
+    slug: 'stump-grinding',
+    short_description: 'Grind stumps below ground level so you can mow, plant or build.',
+    full_description: 'Leftover stumps are trip hazards and attract pests. We grind them down below the surface and can clean up the grindings so the area is ready for grass or new plantings.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 3
   },
   {
     id: 'f-4',
-    title: 'Bathroom & Kitchen Remodeling',
-    slug: 'kitchen-bathroom-remodeling',
-    short_description: 'Complete high-end structural general contracting, fixture piping, flooring, and luxury cabinetry design.',
-    full_description: 'Upgrade your living space with our experienced general contracting division. We handle all elements of kitchen and bathroom renovations—from code-compliant structural framing and premium copper/PEX layout lines to custom tiling, luxury fixture integration, and quartz finishes.',
-    price_range: 'Custom Quote Available',
+    title: 'Storm Damage Cleanup',
+    slug: 'storm-damage-cleanup',
+    short_description: 'Fast help clearing fallen trees and broken limbs after a storm.',
+    full_description: 'After high winds or ice, we cut up and remove fallen trees and hanging limbs so you can get your yard, driveway and roof clear again.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 4
   },
   {
     id: 'f-5',
-    title: 'Sewer Repair & Trenchless Services',
-    slug: 'sewer-repair-trenchless',
-    short_description: 'Advanced camera diagnostics and trenchless pipe lining restoration with zero yard disruption.',
-    full_description: 'Save your yard and driveways with modern trenchless epoxy lining technology. We locate root damages using micro-optic lines, ream out obstructions, and insert seamless, heavy-duty liners that carry a lifetime structural guarantee.',
-    price_range: 'Starting at $350',
+    title: 'Lot & Land Clearing',
+    slug: 'lot-land-clearing',
+    short_description: 'Clear brush, small trees and overgrowth from lots and fence lines.',
+    full_description: 'Getting a lot ready to build, opening up a fence line or reclaiming an overgrown yard, we clear trees, brush and undergrowth and haul it off.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 5
   },
   {
     id: 'f-6',
-    title: 'General Repairs & Property Drywall',
-    slug: 'general-contracting-repairs',
-    short_description: 'Comprehensive general contracting fixes, framing, paint touch-ups, and moisture barrier installations.',
-    full_description: 'From repairing structural water damage or drywall sections post-leak to complete room framing and waterproof paint coatings, our general contracting technicians keep your residential or commercial asset in pristine shape.',
-    price_range: 'Starting at $95',
+    title: 'Brush & Debris Haul-Off',
+    slug: 'brush-debris-haul-off',
+    short_description: 'We load up and haul away limbs, brush and yard debris.',
+    full_description: 'Already did the cutting yourself? We will load and haul away the limbs, brush and logs so you are not left with the mess.',
+    price_range: 'Call for a quote',
     featured_image: '',
     is_published: true,
     sort_order: 6
   }
 ]
 
-export const FALLBACK_GALLERY_ITEMS: FallbackGalleryItem[] = [
-  {
-    id: 'g-1',
-    title: 'Complete Master Bath Remodel',
-    description: 'Removed deteriorated drywall and corroded galvanized supply lines. Restructured the plumbing layout for a freestanding soak tub, custom rainfall glass shower, premium floating double vanity, and high-contrast marble mosaic tile work.',
-    before_image: '',
-    after_image: '',
-    completion_date: '2026-04-10',
-    service_category: 'Remodeling',
-    location: 'Beverly Hills, CA',
-    is_published: true,
-    is_private: false,
-    sort_order: 1
-  },
-  {
-    id: 'g-2',
-    title: 'Trenchless Sewer Line Restoration',
-    description: 'Diagnosed severe root intrusion in a main cast-iron lateral line using micro-optical cameras. Used advanced pneumatic cleaning, followed by full seamless epoxy-sleeve pipe liner insertion. Restored full hydraulic velocity without any structural excavation.',
-    before_image: '',
-    after_image: '',
-    completion_date: '2026-05-18',
-    service_category: 'Sewer Repair',
-    location: 'Santa Monica, CA',
-    is_published: true,
-    is_private: false,
-    sort_order: 2
-  }
-]
+export const FALLBACK_GALLERY_ITEMS: FallbackGalleryItem[] = []

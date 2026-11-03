@@ -4,10 +4,10 @@ import React, { useState } from 'react'
 import { ImagePlus, Loader2, Palette, RotateCcw, Save, X } from 'lucide-react'
 import { useWebsiteBuilder } from '@/context/WebsiteBuilderContext'
 import { ImageCropperModal } from '@/components/admin/ImageCropperModal'
-import { DEFAULT_BRAND, FONT_OPTIONS, RADIUS_OPTIONS, type SiteBrand } from '@/utils/siteTheme'
+import { FONT_OPTIONS, RADIUS_OPTIONS, type SiteBrand } from '@/utils/siteTheme'
 
 const COLOR_PRESETS: { label: string; primary: string; secondary: string }[] = [
-  { label: 'Ocean blue', primary: DEFAULT_BRAND.primary_color, secondary: DEFAULT_BRAND.secondary_color },
+  { label: 'Ocean blue', primary: '#2563eb', secondary: '#0f172a' },
   { label: 'Forest green', primary: '#15803d', secondary: '#14261c' },
   { label: 'Teal', primary: '#0d9488', secondary: '#112a2c' },
   { label: 'Crimson', primary: '#dc2626', secondary: '#1f1416' },

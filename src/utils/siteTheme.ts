@@ -22,19 +22,19 @@ export interface SiteBrand {
 }
 
 export const DEFAULT_BRAND: SiteBrand = {
-  site_name: 'TrinityEnterprise',
-  footer_name: 'TrinityEnterprise',
-  footer_tagline: '',
-  copyright_text: '© {year} TrinityEnterprise. All rights reserved.',
-  logo_url: '',
-  favicon_url: '',
-  primary_color: '#2563eb',
-  secondary_color: '#0f172a',
+  site_name: 'Trinity Enterprise',
+  footer_name: 'Trinity Enterprise Tree Services',
+  footer_tagline: 'For all your tree service needs.',
+  copyright_text: '© {year} Trinity Enterprise. All rights reserved.',
+  logo_url: '/logo.png',
+  favicon_url: '/favicon.png',
+  primary_color: '#4d7c0f',
+  secondary_color: '#292524',
   heading_font: 'default',
   body_font: 'default',
   border_radius: 'default',
-  seo_title: 'TrinityEnterprise',
-  seo_description: ''
+  seo_title: 'Trinity Enterprise Tree Services',
+  seo_description: 'Tree removal, trimming, stump grinding and storm cleanup. For all your tree service needs.'
 }
 
 export const FONT_OPTIONS: { value: string; label: string; stack: string; google?: string }[] = [
@@ -94,11 +94,15 @@ export function isLightColor(hex?: string) {
 export const copyrightLine = (brand: SiteBrand) =>
   brand.copyright_text.replace(/\{year\}/g, String(new Date().getFullYear()))
 
+// Tailwind's own blue-600 and slate-900. Brand colors equal to these need no override.
+const BASE_PRIMARY = '#2563eb'
+const BASE_SECONDARY = '#0f172a'
+
 /** CSS custom properties for the brand. Only validated values reach the stylesheet. */
 export function themeCss(brand: SiteBrand): string {
   const rules: string[] = []
   const p = brand.primary_color
-  if (HEX.test(p) && p.toLowerCase() !== DEFAULT_BRAND.primary_color) {
+  if (HEX.test(p) && p.toLowerCase() !== BASE_PRIMARY) {
     const tint = (pct: number) => `color-mix(in oklab, ${p} ${pct}%, white)`
     const shade = (pct: number) => `color-mix(in oklab, ${p} ${pct}%, black)`
     rules.push(
@@ -116,7 +120,7 @@ export function themeCss(brand: SiteBrand): string {
     )
   }
   const s = brand.secondary_color
-  if (HEX.test(s) && s.toLowerCase() !== DEFAULT_BRAND.secondary_color) {
+  if (HEX.test(s) && s.toLowerCase() !== BASE_SECONDARY) {
     rules.push(
       `--color-slate-800:color-mix(in oklab, ${s} 85%, white)`,
       `--color-slate-900:${s}`,
