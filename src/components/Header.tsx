@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
-import { Droplet, Menu, X, User, LayoutDashboard, Settings } from 'lucide-react'
+import { TreeDeciduous, Menu, X, User, LayoutDashboard, Settings } from 'lucide-react'
 import { useWebsiteBuilder } from '@/context/WebsiteBuilderContext'
 import { InlineText } from '@/components/admin/InlineText'
 
@@ -315,5 +315,5 @@ export function BrandLogo({ src, alt, className = 'h-10 w-auto max-w-[180px] obj
   iconClassName?: string
 }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return src ? <img src={src} alt={alt} className={className} /> : <Droplet className={iconClassName} size={iconSize} />
+  return src ? <img src={src} alt={alt} className={className} /> : <TreeDeciduous className={iconClassName} size={iconSize} />
 }

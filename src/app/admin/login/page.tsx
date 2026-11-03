@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Droplet, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { TreeDeciduous, Lock, Mail, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('')
@@ -71,7 +71,7 @@ export default function AdminLoginPage() {
       <div className="p-10 bg-white shadow-2xl rounded-2xl w-full max-w-md border border-slate-200">
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-4">
-            <Droplet className="text-blue-600" size={32} />
+            <TreeDeciduous className="text-blue-600" size={32} />
           </div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Login</h1>
           <p className="text-slate-500 mt-2"><SiteName suffix=" Management Portal" /></p>

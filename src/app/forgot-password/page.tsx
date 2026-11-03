@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
-import { AlertCircle, CheckCircle2, Loader2, Mail, Droplet } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Loader2, Mail, TreeDeciduous } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -39,7 +39,7 @@ export default function ForgotPasswordPage() {
     <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-slate-50 px-6">
       <div className="p-10 bg-white shadow-xl rounded-2xl w-full max-w-md border border-slate-200 text-center">
         <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 text-blue-600 mx-auto">
-          <Droplet size={32} />
+          <TreeDeciduous size={32} />
         </div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Forgot Password</h1>
         <p className="text-slate-500 mt-2 font-medium mb-8">Enter your email address to receive a recovery link</p>

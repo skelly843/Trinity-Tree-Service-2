@@ -21,7 +21,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
-  Droplet
+  TreeDeciduous
 } from 'lucide-react'
 
 export default async function AdminLayout({
@@ -82,7 +82,7 @@ export default async function AdminLayout({
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col sticky top-0 h-screen overflow-y-auto shrink-0">
         <div className="p-6 border-b border-slate-800 flex items-center space-x-2">
-          <Droplet className="text-blue-500" size={24} />
+          <TreeDeciduous className="text-blue-500" size={24} />
           <span className="text-lg font-bold tracking-tight">CRM Admin Portal</span>
         </div>
 

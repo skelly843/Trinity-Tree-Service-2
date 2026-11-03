@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { ChevronRight, Droplet } from 'lucide-react'
+import { ChevronRight, TreeDeciduous } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { FALLBACK_SERVICES } from '@/utils/fallbackData'
 import { ManageLink, SectionHeading } from './shared'
@@ -53,7 +53,7 @@ export default function ServicesGridBlock({ data, editable, update }: BlockProps
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={service.featured_image} alt={service.title} className="w-full h-full object-cover" />
                   ) : (
-                    <Droplet size={32} />
+                    <TreeDeciduous size={32} />
                   )}
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">{service.title}</h3>

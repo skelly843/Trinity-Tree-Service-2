@@ -8,7 +8,7 @@ import {
   MessageSquare,
   History,
   ArrowRight,
-  Droplet,
+  TreeDeciduous,
   User,
   Home,
   FileCheck,
@@ -75,7 +75,7 @@ export default async function CustomerDashboard() {
     { label: 'My Properties', href: '/portal/properties', icon: Home },
     { label: 'My Appointments', href: '/portal/appointments', icon: Calendar },
     { label: 'My Requests', href: '/portal/requests', icon: Clock },
-    { label: 'My Jobs', href: '/portal/jobs', icon: Droplet },
+    { label: 'My Jobs', href: '/portal/jobs', icon: TreeDeciduous },
     { label: 'My Estimates', href: '/portal/estimates', icon: FileCheck },
     { label: 'My Invoices', href: '/portal/invoices', icon: FileText },
     { label: 'My Payments', href: '/portal/payments', icon: CreditCard },
@@ -90,7 +90,7 @@ export default async function CustomerDashboard() {
       {/* Header */}
       <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b bg-white sticky top-0 z-50 shadow-sm">
         <Link href="/" className="flex items-center space-x-2">
-          <Droplet className="text-blue-600" size={32} />
+          <TreeDeciduous className="text-blue-600" size={32} />
           <span className="text-2xl font-bold text-slate-900 tracking-tight"><SiteName suffix=" Client Portal" /></span>
         </Link>
         <div className="flex items-center space-x-4">
@@ -113,7 +113,7 @@ export default async function CustomerDashboard() {
             href="/request-service"
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center justify-center space-x-2"
           >
-            <Droplet size={20} />
+            <TreeDeciduous size={20} />
             <span>Request New Service</span>
           </Link>
         </div>
