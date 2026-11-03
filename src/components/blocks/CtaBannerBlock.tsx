@@ -24,7 +24,7 @@ export default function CtaBannerBlock({ data, editable, update }: BlockProps) {
               value={data.body || ''}
               onChange={(body) => update({ body })}
               placeholder="Supporting text"
-              className="text-blue-100 block"
+              className="text-white block"
             />
           </div>
           <EditableLink

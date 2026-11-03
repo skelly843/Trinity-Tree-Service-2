@@ -123,7 +123,7 @@ export default function Header() {
         {brandEditable ? (
           // While editing, the name is a text field rather than a link
           <div className="flex items-center space-x-2 shrink-0">
-            <BrandLogo src={brand.logo_url} alt={brand.site_name} />
+            <BrandLogo src={brand.logo_url} alt={brand.site_name ? '' : brand.footer_name} />
             <InlineText
               element="span"
               value={brand.site_name}
@@ -134,7 +134,7 @@ export default function Header() {
           </div>
         ) : (
           <Link href="/" className="flex items-center space-x-2 shrink-0">
-            <BrandLogo src={brand.logo_url} alt={brand.site_name} />
+            <BrandLogo src={brand.logo_url} alt={brand.site_name ? '' : brand.footer_name} />
             {brand.site_name && (
               <span className="text-2xl font-black text-slate-900 tracking-tight">{brand.site_name}</span>
             )}
@@ -216,6 +216,8 @@ export default function Header() {
         {/* Mobile Hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
           className="lg:hidden p-2 text-slate-600 hover:text-blue-600"
         >
           {menuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -306,7 +308,7 @@ export default function Header() {
   )
 }
 
-/** Uploaded logo, or the default droplet icon */
+/** Uploaded logo, or the default icon. Pass alt="" when the name is shown beside it. */
 export function BrandLogo({ src, alt, className = 'h-10 w-auto max-w-[180px] object-contain', iconSize = 32, iconClassName = 'text-blue-600' }: {
   src: string
   alt: string

@@ -6,12 +6,17 @@ import { ChevronRight, TreeDeciduous } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { FALLBACK_SERVICES } from '@/utils/fallbackData'
 import { ManageLink, SectionHeading } from './shared'
+import { usePageData } from './PageData'
 import type { BlockProps } from './types'
 
 export default function ServicesGridBlock({ data, editable, update }: BlockProps) {
-  const [services, setServices] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  // Server-loaded list paints first; the fetch below keeps it current after admin edits
+  const preloaded = usePageData().services
+  const [services, setServices] = useState<any[]>(preloaded ?? [])
+  const [loading, setLoading] = useState(preloaded === undefined)
   const limit = Number(data.limit) || 0
+  // Cards sit under the section heading, or directly under the page title when there is none
+  const CardHeading = data.title ? 'h3' : 'h2'
 
   useEffect(() => {
     const supabase = createClient()
@@ -56,7 +61,7 @@ export default function ServicesGridBlock({ data, editable, update }: BlockProps
                     <TreeDeciduous size={32} />
                   )}
                 </div>
-                <h3 className="text-xl font-bold text-slate-900">{service.title}</h3>
+                <CardHeading className="text-xl font-bold text-slate-900">{service.title}</CardHeading>
                 <p className="text-slate-600 text-sm line-clamp-3">{service.short_description}</p>
               </div>
 
@@ -68,7 +73,7 @@ export default function ServicesGridBlock({ data, editable, update }: BlockProps
                   href={`/services/${service.slug}`}
                   className="flex items-center text-blue-600 font-bold text-sm ml-auto hover:underline"
                 >
-                  <span>Learn More</span>
+                  <span>Learn More<span className="sr-only"> about {service.title}</span></span>
                   <ChevronRight size={16} className="ml-1" />
                 </Link>
               </div>
@@ -77,7 +82,7 @@ export default function ServicesGridBlock({ data, editable, update }: BlockProps
 
           {services.length === 0 && !loading && (
             <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-slate-200">
-              <p className="text-slate-400 italic">No published services found. Please check back later or contact us directly.</p>
+              <p className="text-slate-500 italic">No published services found. Please check back later or contact us directly.</p>
             </div>
           )}
         </div>

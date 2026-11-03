@@ -6,6 +6,7 @@ import { Image as ImageIcon } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { FALLBACK_GALLERY_ITEMS } from '@/utils/fallbackData'
 import { ManageLink, SectionHeading } from './shared'
+import { usePageData } from './PageData'
 import { PhotoLightbox, type LightboxPhoto } from './PhotoLightbox'
 import type { BlockProps } from './types'
 
@@ -37,9 +38,13 @@ function Photo({ src, label, highlight, onOpen }: { src?: string; label: string;
 }
 
 export default function GalleryGridBlock({ data, editable, update }: BlockProps) {
-  const [items, setItems] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  // Server-loaded list paints first; the fetch below keeps it current after admin edits
+  const preloaded = usePageData().gallery
+  const [items, setItems] = useState<any[]>(preloaded ?? [])
+  const [loading, setLoading] = useState(preloaded === undefined)
   const [openSrc, setOpenSrc] = useState<string | null>(null)
+  // Cards sit under the section heading, or directly under the page title when there is none
+  const CardHeading = data.title ? 'h3' : 'h2'
 
   const closeLightbox = useCallback(() => setOpenSrc(null), [])
   const photos = useMemo<LightboxPhoto[]>(
@@ -88,7 +93,7 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-4">
-                  <h3 className="text-xl font-bold text-slate-900">{item.title}</h3>
+                  <CardHeading className="text-xl font-bold text-slate-900">{item.title}</CardHeading>
                   <span className="text-xs font-semibold text-slate-400 shrink-0">
                     {item.completion_date && format(new Date(item.completion_date), 'MMM yyyy')}
                   </span>
@@ -112,7 +117,7 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
 
           {items.length === 0 && !loading && (
             <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-slate-200">
-              <p className="text-slate-400 italic">No published projects yet. Check back soon for our completed transformations!</p>
+              <p className="text-slate-500 italic">No published projects yet. Check back soon for our completed transformations!</p>
             </div>
           )}
         </div>

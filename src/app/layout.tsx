@@ -7,7 +7,6 @@ import SiteTheme from "@/components/SiteTheme";
 import { WebsiteBuilderProvider } from '@/context/WebsiteBuilderContext'
 import { VisualEditorToolbar } from '@/components/admin/VisualEditorToolbar'
 import GlobalEditorButton from '@/components/admin/GlobalEditorButton'
-import { getProfile } from '@/utils/supabase/getProfile'
 import { loadSiteBrand } from '@/utils/supabase/loadSiteBrand'
 
 const geistSans = Geist({
@@ -34,9 +33,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Fetch real profile server-side safely
-  const [profile, brand] = await Promise.all([getProfile(), loadSiteBrand()])
-  const isGlobalAdmin = profile?.role === 'global_admin' && profile?.is_active === true
+  // No cookies here, so public pages stay cacheable. Who is signed in is checked in the browser.
+  const brand = await loadSiteBrand()
 
   return (
     <html
@@ -44,13 +42,13 @@ export default async function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50">
-        <WebsiteBuilderProvider initialIsGlobalAdmin={isGlobalAdmin} initialBrand={brand}>
+        <WebsiteBuilderProvider initialBrand={brand}>
           <SiteTheme />
-          {isGlobalAdmin && <VisualEditorToolbar />}
+          <VisualEditorToolbar />
           <Header />
           <div className="flex-1 flex flex-col">{children}</div>
           <Footer />
-          {isGlobalAdmin && <GlobalEditorButton />}
+          <GlobalEditorButton />
         </WebsiteBuilderProvider>
       </body>
     </html>

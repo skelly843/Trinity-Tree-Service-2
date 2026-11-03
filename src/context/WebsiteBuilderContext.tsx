@@ -89,15 +89,14 @@ const RLS_SILENT_BLOCK =
 
 export const WebsiteBuilderProvider: React.FC<{
   children: React.ReactNode
-  initialIsGlobalAdmin?: boolean
   initialBrand?: SiteBrand
-}> = ({ children, initialIsGlobalAdmin = false, initialBrand = DEFAULT_BRAND }) => {
+}> = ({ children, initialBrand = DEFAULT_BRAND }) => {
   const supabase = useMemo(() => createClient(), [])
   const router = useRouter()
   const pathname = usePathname()
   const currentPage = pathToPageId(pathname)
 
-  const [isGlobalAdmin, setIsGlobalAdmin] = useState(initialIsGlobalAdmin)
+  const [isGlobalAdmin, setIsGlobalAdmin] = useState(false)
   const [editModeRaw, setEditModeRaw] = useState(false)
   const [previewMode, setPreviewMode] = useState(false)
   const [previewDevice, setPreviewDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop')
@@ -127,11 +126,7 @@ export const WebsiteBuilderProvider: React.FC<{
   }, [])
   const dismissToast = useCallback((id: number) => setToasts((prev) => prev.filter((t) => t.id !== id)), [])
 
-  // ---------- role: server value is authoritative on load; re-check on sign in/out ----------
-  useEffect(() => {
-    setIsGlobalAdmin(initialIsGlobalAdmin)
-  }, [initialIsGlobalAdmin])
-
+  // ---------- role: checked in the browser so public pages can be cached ----------
   useEffect(() => {
     let subscription: { unsubscribe: () => void } | null = null
     try {
@@ -141,7 +136,7 @@ export const WebsiteBuilderProvider: React.FC<{
           setEditModeRaw(false)
           return
         }
-        if (event !== 'SIGNED_IN' && event !== 'USER_UPDATED') return
+        if (event !== 'INITIAL_SESSION' && event !== 'SIGNED_IN' && event !== 'USER_UPDATED') return
         const { data: profile } = await supabase
           .from('profiles')
           .select('role, is_active')
@@ -183,11 +178,23 @@ export const WebsiteBuilderProvider: React.FC<{
     [supabase]
   )
 
+  /** Public pages are cached; ask the server to rebuild them after the editor writes. Never throws. */
+  const refreshPublicPages = useCallback(async () => {
+    try {
+      const res = await fetch('/api/site/revalidate', { method: 'POST' })
+      if (res.ok) return
+    } catch {
+      // Reported below
+    }
+    showToast('error', 'Saved, but the live site could not be refreshed. Visitors will see the change within an hour.')
+  }, [showToast])
+
   const saveBrand = useCallback(async () => {
     if (saving) return
     setSaving(true)
     try {
       await writeBrand(styles)
+      await refreshPublicPages()
       showToast('success', 'Brand & theme saved — visitors now see it.')
       router.refresh()
     } catch (err: any) {
@@ -195,7 +202,7 @@ export const WebsiteBuilderProvider: React.FC<{
     } finally {
       setSaving(false)
     }
-  }, [saving, writeBrand, styles, showToast, router])
+  }, [saving, writeBrand, refreshPublicPages, styles, showToast, router])
 
   // ---------- page registration ----------
   const registerPage = useCallback((pageId: PageId, initial: PageBlock[], persisted: boolean) => {
@@ -395,6 +402,7 @@ export const WebsiteBuilderProvider: React.FC<{
         persistedIds.current = new Set(savedBlocks.map((b) => b.id))
         setHistory((h) => ({ past: h.past.map(remap), present: savedBlocks, future: h.future.map(remap) }))
         setSavedSnapshot(serialize(savedBlocks))
+        await refreshPublicPages()
 
         showToast('success', publish ? 'Published — visitors now see these changes.' : 'Draft saved.')
         if (publish) router.refresh()
@@ -404,7 +412,7 @@ export const WebsiteBuilderProvider: React.FC<{
         setSaving(false)
       }
     },
-    [loadedPage, saving, supabase, stylesDirty, styles, writeBrand, showToast, router]
+    [loadedPage, saving, supabase, stylesDirty, styles, writeBrand, refreshPublicPages, showToast, router]
   )
 
   const saveDraft = useCallback(() => persist(false), [persist])

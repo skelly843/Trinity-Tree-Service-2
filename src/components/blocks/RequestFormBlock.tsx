@@ -29,6 +29,8 @@ const EMPTY_FORM = {
 
 export default function RequestFormBlock({ data, editable, update }: BlockProps) {
   const [loading, setLoading] = useState(false)
+  // Steps sit under the form heading, or directly under the page title when there is none
+  const StepHeading = data.title ? 'h3' : 'h2'
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [services, setServices] = useState<any[]>([])
@@ -140,7 +142,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             {/* Personal Details */}
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">1. Personal Information</h3>
+              <StepHeading className="font-bold text-slate-900 border-b border-slate-100 pb-2">1. Personal Information</StepHeading>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label htmlFor="rq-first" className={labelClass}>First Name</label>
@@ -165,7 +167,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
 
             {/* Service Address */}
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">2. Service Address</h3>
+              <StepHeading className="font-bold text-slate-900 border-b border-slate-100 pb-2">2. Service Address</StepHeading>
               <div className="space-y-2">
                 <label htmlFor="rq-address" className={labelClass}>Street Address</label>
                 <input id="rq-address" type="text" {...field('address')} className={inputClass} placeholder="123 Main St" required />
@@ -188,7 +190,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
 
             {/* Service Requirements */}
             <div className="space-y-4">
-              <h3 className="font-bold text-slate-900 border-b border-slate-100 pb-2">3. Service Requested & Issue</h3>
+              <StepHeading className="font-bold text-slate-900 border-b border-slate-100 pb-2">3. Service Requested & Issue</StepHeading>
               <div className="space-y-2">
                 <label htmlFor="rq-service" className={labelClass}>Service Type</label>
                 <select id="rq-service" {...field('serviceRequested')} className={`${inputClass} py-2.5 bg-white`} required>

@@ -21,7 +21,7 @@ export default function Footer() {
     <footer className="bg-slate-900 text-white py-12 px-6 mt-auto border-t border-slate-800">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
         <div className="flex items-center space-x-2">
-          <BrandLogo src={brand.logo_url} alt={brand.footer_name} className="h-8 w-auto max-w-[140px] object-contain" iconSize={24} iconClassName="text-blue-400" />
+          <BrandLogo src={brand.logo_url} alt="" className="h-8 w-auto max-w-[140px] object-contain" iconSize={24} iconClassName="text-blue-400" />
           <InlineText
             element="span"
             value={brand.footer_name}
@@ -45,7 +45,7 @@ export default function Footer() {
           <Link href="/contact" className="hover:text-white transition-colors font-medium">Contact</Link>
         </div>
       </div>
-      <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-500">
+      <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-400">
         {editable ? (
           <>
             <InlineText
