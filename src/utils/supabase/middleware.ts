@@ -78,10 +78,12 @@ export async function updateSession(request: NextRequest) {
 
     const role = profile?.role || 'customer'
 
-    // Block customers from admin/employee areas
-    if (url.pathname.startsWith('/admin') && role !== 'admin' && role !== 'global_admin') {
+    // Block customers from admin/employee areas. Employees may only write estimates
+    // (the database limits them to the customers assigned to them).
+    const employeeEstimates = role === 'employee' && url.pathname.startsWith('/admin/estimates')
+    if (url.pathname.startsWith('/admin') && role !== 'admin' && role !== 'global_admin' && !employeeEstimates) {
       if (url.pathname !== '/admin/login') {
-        url.pathname = '/portal'
+        url.pathname = role === 'employee' ? '/employee' : '/portal'
         return NextResponse.redirect(url)
       }
     }

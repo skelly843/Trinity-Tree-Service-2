@@ -52,7 +52,11 @@ export default async function AdminLayout({
     return redirect('/portal')
   }
 
-  const navItems = [
+  const navItems = role === 'employee' ? [
+    // Employees only have the estimates page here; the rest of their tools are under /employee
+    { label: 'Employee Dashboard', href: '/employee', icon: LayoutDashboard },
+    { label: 'Estimates', href: '/admin/estimates', icon: FileCheck },
+  ] : [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     { label: 'Calendar & Scheduling', href: '/admin/calendar', icon: Calendar },
     { label: 'Service Requests', href: '/admin/service-requests', icon: Inbox },

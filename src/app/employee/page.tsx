@@ -1,6 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
 import { format } from 'date-fns'
-import { Users, Calendar as CalendarIcon, CheckSquare, DollarSign } from 'lucide-react'
+import { Users, Calendar as CalendarIcon, CheckSquare, DollarSign, FileCheck } from 'lucide-react'
 import Link from 'next/link'
 import { Database } from '@/types/database.types'
 
@@ -33,9 +33,18 @@ export default async function EmployeeOverview() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-500">Overview of business operations.</p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <p className="text-gray-500">Overview of business operations.</p>
+        </div>
+        <Link
+          href="/admin/estimates"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-1.5"
+        >
+          <FileCheck size={16} />
+          Estimates
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
