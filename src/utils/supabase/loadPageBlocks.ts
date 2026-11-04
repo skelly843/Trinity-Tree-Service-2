@@ -1,6 +1,7 @@
 import { createPublicClient } from '@/utils/supabase/public'
 import { getDefaultBlocks, type PageId } from '@/utils/pages'
 import { FALLBACK_GALLERY_ITEMS, FALLBACK_SERVICES } from '@/utils/fallbackData'
+import { fetchGalleryFilters, fetchPublicGallery } from '@/utils/galleryData'
 import type { PageBlock } from '@/components/blocks/types'
 import type { PageData } from '@/components/blocks/PageData'
 
@@ -40,11 +41,12 @@ export async function loadPageBlocks(
   }
 
   const types = new Set(blocks.map((b) => b.block_type))
-  const [services, gallery] = await Promise.all([
+  const [services, gallery, galleryFilters] = await Promise.all([
     types.has('services_grid') ? loadServices(supabase) : undefined,
-    types.has('gallery_grid') ? loadGallery(supabase) : undefined
+    types.has('gallery_grid') ? loadGallery(supabase) : undefined,
+    types.has('gallery_grid') && supabase ? fetchGalleryFilters(supabase) : undefined
   ])
-  return { blocks, persisted, data: { services, gallery } }
+  return { blocks, persisted, data: { services, gallery, galleryFilters } }
 }
 
 async function loadServices(supabase: PublicClient | null) {
@@ -63,15 +65,10 @@ async function loadServices(supabase: PublicClient | null) {
 
 async function loadGallery(supabase: PublicClient | null) {
   if (!supabase) return FALLBACK_GALLERY_ITEMS
-  const { data, error } = await supabase
-    .from('gallery_items')
-    .select('*')
-    .eq('is_published', true)
-    .eq('is_private', false)
-    .order('sort_order', { ascending: true })
+  const { items, error } = await fetchPublicGallery(supabase)
   if (error) {
-    console.warn('gallery load failed:', error.message)
+    console.warn('gallery load failed:', error)
     return FALLBACK_GALLERY_ITEMS
   }
-  return data || []
+  return items
 }

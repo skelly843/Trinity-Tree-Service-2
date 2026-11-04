@@ -6,6 +6,7 @@ import { createContext, useContext } from 'react'
 export interface PageData {
   services?: any[]
   gallery?: any[]
+  galleryFilters?: { id: string; name: string }[]
 }
 
 const PageDataContext = createContext<PageData>({})

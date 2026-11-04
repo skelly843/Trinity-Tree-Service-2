@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
 import { Plus, Search, Trash2, Edit, ImageIcon, Star, Globe, Lock } from 'lucide-react'
 import { Database } from '@/types/database.types'
+import GalleryFiltersManager from '@/components/admin/GalleryFiltersManager'
 
 type GalleryItem = Database['public']['Tables']['gallery_items']['Row']
 
@@ -10,10 +11,12 @@ export default async function AdminGalleryPage() {
 
   const { data: items } = await supabase
     .from('gallery_items')
-    .select('*')
+    .select('*, gallery_item_filters(gallery_filters(name))')
     .order('sort_order', { ascending: true })
 
-  const typedItems = (items as unknown as GalleryItem[]) || []
+  const typedItems = (items as unknown as (GalleryItem & { gallery_item_filters?: { gallery_filters: { name: string } | null }[] })[]) || []
+  const filterNames = (item: (typeof typedItems)[number]) =>
+    (item.gallery_item_filters || []).map((link) => link.gallery_filters?.name).filter(Boolean).join(', ')
 
   return (
     <div className="p-8 space-y-6">
@@ -30,6 +33,8 @@ export default async function AdminGalleryPage() {
           <span>Add Gallery Item</span>
         </Link>
       </div>
+
+      <GalleryFiltersManager />
 
       <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
         <div className="relative flex-1">
@@ -72,7 +77,7 @@ export default async function AdminGalleryPage() {
             </div>
             <div className="p-4">
               <p className="font-bold text-slate-800 line-clamp-1">{item.title}</p>
-              <p className="text-xs text-slate-500 mt-1">{item.service_category || 'General'}</p>
+              <p className="text-xs text-slate-500 mt-1">{filterNames(item) || item.service_category || 'No filters'}</p>
 
               <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">

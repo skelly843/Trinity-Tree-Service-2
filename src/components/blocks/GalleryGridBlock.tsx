@@ -5,6 +5,7 @@ import { format } from 'date-fns'
 import { Image as ImageIcon } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { FALLBACK_GALLERY_ITEMS } from '@/utils/fallbackData'
+import { fetchGalleryFilters, fetchPublicGallery, type PublicGalleryFilter } from '@/utils/galleryData'
 import { ManageLink, SectionHeading } from './shared'
 import { usePageData } from './PageData'
 import { PhotoLightbox, type LightboxPhoto } from './PhotoLightbox'
@@ -39,35 +40,45 @@ function Photo({ src, label, highlight, onOpen }: { src?: string; label: string;
 
 export default function GalleryGridBlock({ data, editable, update }: BlockProps) {
   // Server-loaded list paints first; the fetch below keeps it current after admin edits
-  const preloaded = usePageData().gallery
+  const pageData = usePageData()
+  const preloaded = pageData.gallery
   const [items, setItems] = useState<any[]>(preloaded ?? [])
+  const [filters, setFilters] = useState<PublicGalleryFilter[]>(pageData.galleryFilters ?? [])
+  const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [loading, setLoading] = useState(preloaded === undefined)
   const [openSrc, setOpenSrc] = useState<string | null>(null)
   // Cards sit under the section heading, or directly under the page title when there is none
   const CardHeading = data.title ? 'h3' : 'h2'
 
+  // Only offer filters that have at least one project to show
+  const usedFilters = useMemo(
+    () => filters.filter((f) => items.some((item) => (item.filter_ids || []).includes(f.id))),
+    [filters, items]
+  )
+  const filterName = useMemo(() => new Map(filters.map((f) => [f.id, f.name])), [filters])
+  const shown = activeFilter ? items.filter((item) => (item.filter_ids || []).includes(activeFilter)) : items
+
   const closeLightbox = useCallback(() => setOpenSrc(null), [])
   const photos = useMemo<LightboxPhoto[]>(
     () =>
-      items.flatMap((item) => [
+      shown.flatMap((item) => [
         ...(item.before_image ? [{ src: item.before_image, caption: `${item.title} – Before` }] : []),
         ...(item.after_image ? [{ src: item.after_image, caption: `${item.title} – After` }] : [])
       ]),
-    [items]
+    [shown]
   )
 
   useEffect(() => {
     const supabase = createClient()
     async function loadGallery() {
       try {
-        const { data: rows, error } = await supabase
-          .from('gallery_items')
-          .select('*')
-          .eq('is_published', true)
-          .eq('is_private', false)
-          .order('sort_order', { ascending: true })
-        if (error) throw error
-        setItems(rows || [])
+        const [{ items: rows, error }, filterRows] = await Promise.all([
+          fetchPublicGallery(supabase),
+          fetchGalleryFilters(supabase)
+        ])
+        if (error) throw new Error(error)
+        setItems(rows)
+        setFilters(filterRows)
       } catch (err) {
         console.warn('Failed to load gallery items:', err)
         setItems(FALLBACK_GALLERY_ITEMS)
@@ -83,8 +94,31 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
       <div className="max-w-6xl mx-auto px-6">
         <SectionHeading data={data} update={update} editable={editable} />
 
+        {usedFilters.length > 0 && (
+          <div className="flex flex-wrap justify-center gap-2 mb-10" role="group" aria-label="Filter projects">
+            {[{ id: null as string | null, name: 'All' }, ...usedFilters].map((f) => {
+              const on = activeFilter === f.id
+              return (
+                <button
+                  key={f.id ?? 'all'}
+                  type="button"
+                  onClick={() => setActiveFilter(f.id)}
+                  aria-pressed={on}
+                  className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors ${
+                    on
+                      ? 'bg-blue-600 border-blue-600 text-white'
+                      : 'bg-white border-slate-200 text-slate-700 hover:border-blue-300 hover:text-blue-700'
+                  }`}
+                >
+                  {f.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {items.map((item) => (
+          {shown.map((item) => (
             <div key={item.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
                 <Photo src={item.before_image} label="Before" onOpen={() => setOpenSrc(item.before_image)} />
@@ -100,11 +134,19 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
                 </div>
                 {item.description && <p className="text-slate-600 text-sm leading-relaxed">{item.description}</p>}
                 <div className="pt-2 flex flex-wrap gap-2">
-                  {item.service_category && (
-                    <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
-                      {item.service_category}
-                    </span>
-                  )}
+                  {(item.filter_ids || []).length > 0
+                    ? item.filter_ids.map((id: string) =>
+                        filterName.has(id) ? (
+                          <span key={id} className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                            {filterName.get(id)}
+                          </span>
+                        ) : null
+                      )
+                    : item.service_category && (
+                        <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
+                          {item.service_category}
+                        </span>
+                      )}
                   {item.location && (
                     <span className="px-2.5 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-bold uppercase tracking-wider">
                       {item.location}

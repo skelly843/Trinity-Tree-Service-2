@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/utils/supabase/client'
 import {
@@ -11,9 +11,11 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Star,
-  Upload
+  Upload,
+  Plus
 } from 'lucide-react'
 import ImageUpload from './ImageUpload'
+import { createGalleryFilter, loadGalleryFilters, type GalleryFilter } from './GalleryFiltersManager'
 import { Database } from '@/types/database.types'
 
 type GalleryItem = Database['public']['Tables']['gallery_items']['Row']
@@ -42,6 +44,35 @@ export default function GalleryForm({ initialData }: GalleryFormProps) {
     sort_order: initialData?.sort_order || 0,
   })
 
+  // Gallery filters this project is tagged with
+  const [filters, setFilters] = useState<GalleryFilter[]>([])
+  const [selectedFilters, setSelectedFilters] = useState<string[]>([])
+  const [newFilterName, setNewFilterName] = useState('')
+  const [filterError, setFilterError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadGalleryFilters(supabase).then(setFilters)
+    if (initialData?.id) {
+      supabase
+        .from('gallery_item_filters')
+        .select('filter_id')
+        .eq('item_id', initialData.id)
+        .then(({ data }: { data: { filter_id: string }[] | null }) => setSelectedFilters((data || []).map((row) => row.filter_id)))
+    }
+  }, [initialData?.id])
+
+  const toggleFilter = (id: string) =>
+    setSelectedFilters((prev) => (prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]))
+
+  const handleAddFilter = async () => {
+    setFilterError(null)
+    const { filter, error: err } = await createGalleryFilter(supabase, newFilterName, filters)
+    if (err || !filter) return setFilterError(err || 'Could not add the filter.')
+    setFilters((prev) => [...prev, filter])
+    setSelectedFilters((prev) => [...prev, filter.id])
+    setNewFilterName('')
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -50,6 +81,8 @@ export default function GalleryForm({ initialData }: GalleryFormProps) {
 
     const payload = {
       ...formData,
+      // Kept in step with the filters for anything that still reads the old text field
+      service_category: filters.filter((f) => selectedFilters.includes(f.id)).map((f) => f.name).join(', '),
       updated_at: new Date().toISOString(),
     }
 
@@ -59,14 +92,28 @@ export default function GalleryForm({ initialData }: GalleryFormProps) {
         .from('gallery_items')
         .update(payload)
         .eq('id', initialData.id)
+        .select('id')
+        .single()
     } else {
       result = await supabase
         .from('gallery_items')
         .insert([payload])
+        .select('id')
+        .single()
     }
 
-    if (result.error) {
-      setError(result.error.message)
+    let saveError = result.error?.message
+    if (!saveError && result.data) {
+      const itemId = result.data.id
+      const { error: clearErr } = await supabase.from('gallery_item_filters').delete().eq('item_id', itemId)
+      const { error: tagErr } = selectedFilters.length > 0
+        ? await supabase.from('gallery_item_filters').insert(selectedFilters.map((filter_id) => ({ item_id: itemId, filter_id })))
+        : { error: null }
+      saveError = clearErr?.message || tagErr?.message
+    }
+
+    if (saveError) {
+      setError(saveError)
       setLoading(false)
     } else {
       setSuccess(true)
@@ -96,17 +143,59 @@ export default function GalleryForm({ initialData }: GalleryFormProps) {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-bold text-slate-700">Service Category</label>
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-bold text-slate-700">Gallery Filters</legend>
+              <p className="text-xs text-slate-500">Visitors can filter the gallery by these. Tick every one that fits this project.</p>
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter) => {
+                  const on = selectedFilters.includes(filter.id)
+                  return (
+                    <label
+                      key={filter.id}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm font-semibold cursor-pointer transition-colors ${
+                        on ? 'bg-purple-50 border-purple-300 text-purple-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => toggleFilter(filter.id)}
+                        className="w-4 h-4 accent-purple-600"
+                      />
+                      {filter.name}
+                    </label>
+                  )
+                })}
+                {filters.length === 0 && <p className="text-sm text-slate-500 italic">No filters yet. Add one below.</p>}
+              </div>
+              <div className="flex gap-2">
                 <input
                   type="text"
-                  value={formData.service_category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, service_category: e.target.value }))}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  placeholder="e.g. Renovation"
+                  value={newFilterName}
+                  onChange={(e) => setNewFilterName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddFilter()
+                    }
+                  }}
+                  className="flex-1 px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none text-sm"
+                  placeholder="Add a new filter, e.g. Concrete"
+                  aria-label="New filter name"
                 />
+                <button
+                  type="button"
+                  onClick={handleAddFilter}
+                  disabled={!newFilterName.trim()}
+                  className="flex items-center gap-1 px-4 py-2 border border-purple-200 text-purple-700 rounded-xl text-sm font-bold hover:bg-purple-50 disabled:opacity-50"
+                >
+                  <Plus size={14} /> Add
+                </button>
               </div>
+              {filterError && <p className="text-xs font-medium text-red-600">{filterError}</p>}
+            </fieldset>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700">Location (Optional)</label>
                 <input
