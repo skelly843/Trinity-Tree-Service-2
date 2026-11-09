@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { Search, User, Mail, Phone, Shield, ArrowRight, Users, Filter } from 'lucide-react'
 import { Database } from '@/types/database.types'
 import { AddCustomerForm } from '@/components/admin/AddCustomerForm'
+import { CustomerPortalAccess } from '@/components/admin/CustomerPortalAccess'
 
 type Profile = Database['public']['Tables']['profiles']['Row']
 
@@ -45,6 +46,8 @@ export default async function AdminCustomersPage({
       </div>
 
       <AddCustomerForm />
+
+      <CustomerPortalAccess />
 
       {/* Filter & Search */}
       <form className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-4">
