@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { InlineText } from '@/components/admin/InlineText'
 import { ImageCropperModal } from '@/components/admin/ImageCropperModal'
+import { ZoomableImage } from './ZoomableImage'
 
 // ---------- icons for feature cards ----------
 
@@ -108,7 +109,10 @@ export const EditableImage: React.FC<{
 
   return (
     <div className={`relative ${className}`}>
-      {src ? (
+      {src && !editable ? (
+        // Visitors can click any photo to see it full size
+        <ZoomableImage src={src} alt={alt} className={imgClassName} />
+      ) : src ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={src} alt={alt} className={imgClassName} />
       ) : (

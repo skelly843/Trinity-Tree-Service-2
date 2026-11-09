@@ -2,6 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
+import { ZoomableImage } from '@/components/blocks/ZoomableImage'
 
 export default async function ServiceDetailPage({
   params,
@@ -63,7 +64,7 @@ export default async function ServiceDetailPage({
           <div className="space-y-8">
              <div className="aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-slate-100">
                {service.featured_image ? (
-                 <img src={service.featured_image} className="w-full h-full object-cover" />
+                 <ZoomableImage src={service.featured_image} alt={service.title} />
                ) : (
                  <div className="w-full h-full flex items-center justify-center text-slate-300 italic">No image provided</div>
                )}
