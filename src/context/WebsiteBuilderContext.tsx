@@ -54,6 +54,8 @@ interface WebsiteBuilderContextType {
   duplicateBlock: (id: string) => void
   toggleBlockVisibility: (id: string) => void
   showToast: (kind: Toast['kind'], message: string) => void
+  /** Rebuild the cached public pages after saving something visitors see */
+  refreshPublicPages: () => Promise<void>
 }
 
 const WebsiteBuilderContext = createContext<WebsiteBuilderContextType | undefined>(undefined)
@@ -502,7 +504,8 @@ export const WebsiteBuilderProvider: React.FC<{
         deleteBlock,
         duplicateBlock,
         toggleBlockVisibility,
-        showToast
+        showToast,
+        refreshPublicPages
       }}
     >
       {children}
