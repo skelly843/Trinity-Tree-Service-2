@@ -8,7 +8,7 @@ import { FALLBACK_GALLERY_ITEMS } from '@/utils/fallbackData'
 import { fetchGalleryFilters, fetchPublicGallery, type PublicGalleryFilter } from '@/utils/galleryData'
 import { ManageLink, SectionHeading } from './shared'
 import { usePageData } from './PageData'
-import { PhotoLightbox, type LightboxPhoto } from './PhotoLightbox'
+import { BeforeAfterLightbox, type BeforeAfterProject } from './BeforeAfterLightbox'
 import type { BlockProps } from './types'
 
 function Photo({ src, label, highlight, onOpen }: { src?: string; label: string; highlight?: boolean; onOpen: () => void }) {
@@ -46,7 +46,7 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
   const [filters, setFilters] = useState<PublicGalleryFilter[]>(pageData.galleryFilters ?? [])
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [loading, setLoading] = useState(preloaded === undefined)
-  const [openSrc, setOpenSrc] = useState<string | null>(null)
+  const [openIndex, setOpenIndex] = useState<number | null>(null)
   // Cards sit under the section heading, or directly under the page title when there is none
   const CardHeading = data.title ? 'h3' : 'h2'
 
@@ -58,13 +58,16 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
   const filterName = useMemo(() => new Map(filters.map((f) => [f.id, f.name])), [filters])
   const shown = activeFilter ? items.filter((item) => (item.filter_ids || []).includes(activeFilter)) : items
 
-  const closeLightbox = useCallback(() => setOpenSrc(null), [])
-  const photos = useMemo<LightboxPhoto[]>(
+  const closeLightbox = useCallback(() => setOpenIndex(null), [])
+  // The viewer steps through the projects currently shown, so it follows the chosen filter
+  const projects = useMemo<BeforeAfterProject[]>(
     () =>
-      shown.flatMap((item) => [
-        ...(item.before_image ? [{ src: item.before_image, caption: `${item.title} – Before` }] : []),
-        ...(item.after_image ? [{ src: item.after_image, caption: `${item.title} – After` }] : [])
-      ]),
+      shown.map((item) => ({
+        title: item.title,
+        details: [item.location, item.completion_date && format(new Date(item.completion_date), 'MMM yyyy')].filter(Boolean).join(' • '),
+        before: item.before_image || undefined,
+        after: item.after_image || undefined
+      })),
     [shown]
   )
 
@@ -118,11 +121,11 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-          {shown.map((item) => (
+          {shown.map((item, index) => (
             <div key={item.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                <Photo src={item.before_image} label="Before" onOpen={() => setOpenSrc(item.before_image)} />
-                <Photo src={item.after_image} label="After" highlight onOpen={() => setOpenSrc(item.after_image)} />
+                <Photo src={item.before_image} label="Before" onOpen={() => setOpenIndex(index)} />
+                <Photo src={item.after_image} label="After" highlight onOpen={() => setOpenIndex(index)} />
               </div>
 
               <div className="space-y-2">
@@ -167,10 +170,10 @@ export default function GalleryGridBlock({ data, editable, update }: BlockProps)
         {editable && <ManageLink href="/admin/gallery" label="Manage gallery projects" />}
       </div>
 
-      {openSrc && (
-        <PhotoLightbox
-          photos={photos}
-          startIndex={Math.max(0, photos.findIndex((p) => p.src === openSrc))}
+      {openIndex !== null && projects.length > 0 && (
+        <BeforeAfterLightbox
+          projects={projects}
+          startIndex={Math.min(openIndex, projects.length - 1)}
           onClose={closeLightbox}
         />
       )}

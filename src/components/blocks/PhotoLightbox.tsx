@@ -49,7 +49,7 @@ export function PhotoLightbox({ photos, startIndex, onClose }: {
       aria-modal="true"
       aria-label={photo.caption}
       data-testid="photo-lightbox"
-      className="fixed inset-0 z-[10002] bg-black/95 flex flex-col text-white"
+      className="fixed inset-0 z-[10002] bg-slate-950 flex flex-col text-white"
       onClick={onClose}
     >
       <div className="flex items-center justify-between gap-4 px-4 py-3 shrink-0" onClick={(e) => e.stopPropagation()}>
