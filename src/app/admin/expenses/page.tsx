@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { FileUpload } from '@/components/admin/FileUpload'
+import { StoredFileLink } from '@/components/StoredFileLink'
+import { EXPENSE_CATEGORIES, categoryLabel } from '@/utils/finance'
 import { TrendingDown, Plus, CheckCircle2, AlertCircle, Loader2, Trash2 } from 'lucide-react'
 
 export default function AdminExpensesPage() {
@@ -20,7 +23,9 @@ export default function AdminExpensesPage() {
     amount: '',
     category: 'Materials',
     description: '',
-    internalNotes: ''
+    internalNotes: '',
+    expenseDate: new Date().toISOString().slice(0, 10),
+    receiptFileUrl: ''
   })
 
   const loadExpenses = async () => {
@@ -32,7 +37,7 @@ export default function AdminExpensesPage() {
 
     const { data: jobsList } = await supabase
       .from('jobs')
-      .select('id, title')
+      .select('id, title, customer_id')
 
     setExpenses(exps || [])
     setJobs(jobsList || [])
@@ -50,7 +55,9 @@ export default function AdminExpensesPage() {
       amount: '',
       category: 'Materials',
       description: '',
-      internalNotes: ''
+      internalNotes: '',
+      expenseDate: new Date().toISOString().slice(0, 10),
+      receiptFileUrl: ''
     })
     setShowModal(true)
   }
@@ -72,7 +79,9 @@ export default function AdminExpensesPage() {
           amount: amountNum,
           category: formData.category,
           description: formData.description,
-          internal_notes: formData.internalNotes
+          internal_notes: formData.internalNotes,
+          expense_date: formData.expenseDate,
+          receipt_file_url: formData.receiptFileUrl || null
         }
       ])
 
@@ -163,7 +172,7 @@ export default function AdminExpensesPage() {
                       {exp.vendor}
                     </td>
                     <td className="px-6 py-4 text-sm text-slate-500 capitalize">
-                      {exp.category}
+                      {categoryLabel(exp.category)}
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-400 font-semibold truncate max-w-[150px]">
                       {exp.jobs?.title || 'General Overhead'}
@@ -175,12 +184,15 @@ export default function AdminExpensesPage() {
                       -${Number(exp.amount || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                      {exp.receipt_file_url && <StoredFileLink value={exp.receipt_file_url} label="Receipt" />}
                       <button
                         onClick={() => handleDelete(exp.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg"
                       >
                         <Trash2 size={16} />
                       </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -241,11 +253,9 @@ export default function AdminExpensesPage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
                   >
-                    <option value="Materials">Materials</option>
-                    <option value="Tools">Tools & Equipment</option>
-                    <option value="Subcontracting">Subcontracting</option>
-                    <option value="Fuel">Fuel & Transport</option>
-                    <option value="Permits">Permits & Licenses</option>
+                    {EXPENSE_CATEGORIES.map((c) => (
+                      <option key={c.value} value={c.value}>{c.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="space-y-1.5">
@@ -272,6 +282,25 @@ export default function AdminExpensesPage() {
                   required
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Expense Date</label>
+                <input
+                  type="date"
+                  value={formData.expenseDate}
+                  onChange={(e) => setFormData({ ...formData, expenseDate: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                  required
+                />
+              </div>
+
+              <FileUpload
+                bucket="receipts"
+                folder={jobs.find((j) => j.id === formData.jobId)?.customer_id || undefined}
+                label="Receipt (optional)"
+                value={formData.receiptFileUrl}
+                onChange={(ref) => setFormData({ ...formData, receiptFileUrl: ref })}
+              />
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Internal Ledger Notes</label>

@@ -1,5 +1,5 @@
 -- supabase/full-setup.sql
--- Everything a new client project needs, in one file: migrations 001 to 009 in order.
+-- Everything a new client project needs, in one file: migrations 001 to 013 in order.
 -- Paste it into the Supabase SQL Editor of a new project and run it once.
 
 -- supabase/migrations/001_initial_schema.sql
@@ -2335,3 +2335,38 @@ create policy "Admins tag gallery items" on public.gallery_item_filters for inse
   with check (public.is_admin() and exists (select 1 from public.gallery_items gi where gi.id = gallery_item_filters.item_id));
 create policy "Admins untag gallery items" on public.gallery_item_filters for delete to authenticated
   using (public.is_admin());
+
+-- supabase/migrations/013_income_and_imports.sql
+-- Income that is not a customer invoice payment (bank deposits, cash sales, refunds,
+-- grants), so the financial report can show everything that came in, and so statement
+-- lines read by the AI import have somewhere to go.
+-- Run after 012_gallery_filters.sql. Safe to run more than once.
+
+create table if not exists public.income_entries (
+  id uuid primary key default gen_random_uuid(),
+  entry_date date not null default current_date,
+  source text not null,
+  description text,
+  amount numeric not null check (amount > 0),
+  category text not null default 'Other income',
+  file_ref text,
+  created_by uuid references public.profiles(id) on delete set null default auth.uid(),
+  created_at timestamp with time zone not null default now()
+);
+
+create index if not exists income_entries_date_idx on public.income_entries (entry_date);
+create index if not exists expenses_date_idx on public.expenses (expense_date);
+
+alter table public.income_entries enable row level security;
+
+drop policy if exists "Global admins select income" on public.income_entries;
+drop policy if exists "Global admins insert income" on public.income_entries;
+drop policy if exists "Global admins update income" on public.income_entries;
+drop policy if exists "Global admins delete income" on public.income_entries;
+create policy "Global admins select income" on public.income_entries for select to authenticated using (public.is_global_admin());
+create policy "Global admins insert income" on public.income_entries for insert to authenticated with check (public.is_global_admin());
+create policy "Global admins update income" on public.income_entries for update to authenticated using (public.is_global_admin()) with check (public.is_global_admin());
+create policy "Global admins delete income" on public.income_entries for delete to authenticated using (public.is_global_admin());
+
+revoke all on public.income_entries from anon;
+grant select, insert, update, delete on public.income_entries to authenticated;

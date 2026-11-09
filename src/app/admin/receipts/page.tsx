@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
+import { FileUpload } from '@/components/admin/FileUpload'
+import { StoredFileLink } from '@/components/StoredFileLink'
 import { Receipt, Plus, CheckCircle2, AlertCircle, Loader2, Trash2 } from 'lucide-react'
 
 export default function AdminReceiptsPage() {
@@ -18,7 +20,7 @@ export default function AdminReceiptsPage() {
     customerId: '',
     amount: '',
     description: '',
-    receiptFileUrl: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500', // Mock receipt URL or standard fallback
+    receiptFileUrl: '',
     isVisibleToCustomer: false
   })
 
@@ -47,7 +49,7 @@ export default function AdminReceiptsPage() {
       customerId: '',
       amount: '',
       description: '',
-      receiptFileUrl: 'https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?w=500',
+      receiptFileUrl: '',
       isVisibleToCustomer: false
     })
     setShowModal(true)
@@ -55,6 +57,10 @@ export default function AdminReceiptsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!formData.receiptFileUrl) {
+      setError('Upload the receipt photo or PDF first.')
+      return
+    }
     setSaving(true)
     setError(null)
     setSuccess(null)
@@ -182,12 +188,15 @@ export default function AdminReceiptsPage() {
                       ${Number(rec.amount || 0).toFixed(2)}
                     </td>
                     <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                      <StoredFileLink value={rec.receipt_file_url} label="View" />
                       <button
                         onClick={() => handleDelete(rec.id)}
                         className="p-1.5 text-slate-400 hover:text-red-600 rounded-lg"
                       >
                         <Trash2 size={16} />
                       </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -252,6 +261,14 @@ export default function AdminReceiptsPage() {
                   required
                 />
               </div>
+
+              <FileUpload
+                bucket="receipts"
+                folder={formData.customerId || undefined}
+                label="Receipt photo or PDF"
+                value={formData.receiptFileUrl}
+                onChange={(ref) => setFormData({ ...formData, receiptFileUrl: ref })}
+              />
 
               <div className="flex items-center space-x-3 p-3 bg-slate-50 border border-slate-100 rounded-xl">
                 <input

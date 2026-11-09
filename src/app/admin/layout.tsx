@@ -21,6 +21,8 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  FolderOpen,
+  BarChart3,
   TreeDeciduous
 } from 'lucide-react'
 
@@ -67,6 +69,7 @@ export default async function AdminLayout({
     { label: 'Payments', href: '/admin/payments', icon: CreditCard },
     { label: 'Receipts', href: '/admin/receipts', icon: Receipt },
     { label: 'Expenses', href: '/admin/expenses', icon: TrendingDown },
+    { label: 'Customer Documents', href: '/admin/documents', icon: FolderOpen },
     { label: 'Notes', href: '/admin/notes', icon: MessageSquare },
     { label: 'Services Manager', href: '/admin/services', icon: Wrench },
     { label: 'Gallery Manager', href: '/admin/gallery', icon: ImageIcon },
@@ -75,6 +78,7 @@ export default async function AdminLayout({
   // Only global_admin can access Admin User Accounts and Audit logs
   if (role === 'global_admin') {
     navItems.push(
+      { label: 'Finances & Reports', href: '/admin/finances', icon: BarChart3 },
       { label: 'Website Editor', href: '/admin/website-builder', icon: Monitor },
       { label: 'Admin Accounts', href: '/admin/users', icon: UserCheck },
       { label: 'Audit Log', href: '/admin/audit', icon: ShieldCheck }

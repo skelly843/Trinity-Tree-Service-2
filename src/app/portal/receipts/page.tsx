@@ -4,6 +4,7 @@ import { SiteName } from '@/components/SiteTheme'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
+import { StoredFileLink } from '@/components/StoredFileLink'
 import { TreeDeciduous, ArrowLeft, Loader2, Receipt } from 'lucide-react'
 
 export default function CustomerReceiptsPage() {
@@ -88,14 +89,7 @@ export default function CustomerReceiptsPage() {
                     <span className="text-lg font-black text-slate-900">
                       ${Number(rec.amount || 0).toFixed(2)}
                     </span>
-                    <a
-                      href={rec.receipt_file_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-sm"
-                    >
-                      Download file
-                    </a>
+                    <StoredFileLink value={rec.receipt_file_url} label="View receipt" />
                   </div>
                 </div>
               ))}
