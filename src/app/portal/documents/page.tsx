@@ -4,6 +4,7 @@ import { SiteName } from '@/components/SiteTheme'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
+import { StoredFileLink } from '@/components/StoredFileLink'
 import { TreeDeciduous, ArrowLeft, Loader2, FolderOpen, FileText } from 'lucide-react'
 
 export default function CustomerDocumentsPage() {
@@ -28,7 +29,6 @@ export default function CustomerDocumentsPage() {
             .from('documents')
             .select('*')
             .eq('customer_id', customer.id)
-            .eq('is_private_customer', false)
             .order('created_at', { ascending: false })
           setDocuments(data || [])
         }
@@ -84,14 +84,7 @@ export default function CustomerDocumentsPage() {
                     </div>
                   </div>
 
-                  <a
-                    href={doc.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-1.5 rounded-xl transition-all shadow-sm"
-                  >
-                    Open Document
-                  </a>
+                  <StoredFileLink value={doc.file_url} label="Open Document" />
                 </div>
               ))}
               {documents.length === 0 && (

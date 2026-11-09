@@ -27,6 +27,7 @@ import {
   FolderOpen
 } from 'lucide-react'
 import ImageUpload from '@/components/admin/ImageUpload'
+import { PRIVATE_BUCKETS } from '@/utils/storedFiles'
 
 export default function SiteContentPage() {
   const [activeTab, setActiveTab] = useState<'home' | 'about' | 'contact' | 'navigation' | 'footer' | 'seo' | 'media'>('navigation')
@@ -94,6 +95,8 @@ export default function SiteContentPage() {
   // 7. Media Library state
   const [selectedBucket, setSelectedBucket] = useState<'public-site-images' | 'gallery-images' | 'customer-files' | 'receipts' | 'profile-images'>('public-site-images')
   const [mediaFiles, setMediaFiles] = useState<any[]>([])
+  // Private buckets have no public links, so previews use short-lived signed links
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({})
   const [mediaLoading, setMediaLoading] = useState(false)
   const [uploadingMedia, setUploadingMedia] = useState(false)
 
@@ -182,7 +185,15 @@ export default function SiteContentPage() {
         .list('', { limit: 100 })
 
       if (mediaErr) throw mediaErr
-      setMediaFiles(data || [])
+      // Folder entries (customer folders in private buckets) have no id
+      const files = (data || []).filter((f: any) => f.id)
+      setMediaFiles(files)
+      if ((PRIVATE_BUCKETS as readonly string[]).includes(selectedBucket) && files.length > 0) {
+        const { data: signed } = await supabase.storage.from(selectedBucket).createSignedUrls(files.map((f: any) => f.name), 600)
+        setSignedUrls(Object.fromEntries((signed || []).filter((x: any) => x.signedUrl).map((x: any) => [x.path, x.signedUrl])))
+      } else {
+        setSignedUrls({})
+      }
     } catch (err: any) {
       console.error('Error fetching storage:', err)
       setMediaFiles([])
@@ -894,7 +905,9 @@ export default function SiteContentPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {mediaFiles.map((file) => {
                   const path = file.name
-                  const publicUrl = supabase.storage.from(selectedBucket).getPublicUrl(path).data.publicUrl
+                  const publicUrl = (PRIVATE_BUCKETS as readonly string[]).includes(selectedBucket)
+                    ? signedUrls[path] || ''
+                    : supabase.storage.from(selectedBucket).getPublicUrl(path).data.publicUrl
                   const isImage = /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(path)
                   return (
                     <div key={file.id || path} className="border border-slate-100 rounded-xl p-3 bg-slate-50 flex flex-col justify-between space-y-3 shadow-sm hover:shadow transition-shadow group relative">
@@ -913,13 +926,18 @@ export default function SiteContentPage() {
                       <div className="flex gap-1">
                         <button
                           onClick={() => {
+                            // Private files have links that expire, so open them instead of copying
+                            if ((PRIVATE_BUCKETS as readonly string[]).includes(selectedBucket)) {
+                              window.open(publicUrl, '_blank', 'noopener')
+                              return
+                            }
                             navigator.clipboard.writeText(publicUrl)
                             alert('Copied URL to clipboard!')
                           }}
                           className="flex-1 flex items-center justify-center space-x-1 px-2.5 py-1.5 bg-white border hover:bg-slate-50 rounded-lg text-[10px] font-bold text-slate-600"
                         >
                           <Copy size={10} />
-                          <span>Copy URL</span>
+                          <span>{(PRIVATE_BUCKETS as readonly string[]).includes(selectedBucket) ? 'Open' : 'Copy URL'}</span>
                         </button>
                         <button
                           onClick={() => deleteMediaFile(path)}
