@@ -5,7 +5,6 @@ import { createClient } from '@/utils/supabase/client'
 import { DayPicker } from 'react-day-picker'
 import 'react-day-picker/dist/style.css'
 import { format } from 'date-fns'
-import { Plus } from 'lucide-react'
 
 export default function EmployeeCalendar() {
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(new Date())
@@ -24,7 +23,7 @@ export default function EmployeeCalendar() {
 
       const { data } = await supabase
         .from('appointments')
-        .select('*, profiles(full_name)')
+        .select('*, customers(first_name, last_name, phone), customer_properties(address_line, city)')
         .gte('scheduled_at', startOfDay.toISOString())
         .lte('scheduled_at', endOfDay.toISOString())
         .order('scheduled_at', { ascending: true })
@@ -38,11 +37,7 @@ export default function EmployeeCalendar() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Schedule</h1>
-        <button className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-          <Plus size={20} />
-          <span>New Appointment</span>
-        </button>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">My Schedule</h1>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -66,14 +61,21 @@ export default function EmployeeCalendar() {
                 <div key={app.id} className="bg-white p-4 rounded-xl shadow-sm border-l-4 border-l-blue-500 border border-gray-100 flex justify-between items-center">
                   <div>
                     <p className="text-sm font-bold text-blue-600">{format(new Date(app.scheduled_at), 'p')}</p>
-                    <p className="font-medium text-gray-900">{app.profiles?.full_name}</p>
+                    <p className="font-medium text-gray-900">{app.customers ? `${app.customers.first_name} ${app.customers.last_name}` : 'Customer'}</p>
                     <p className="text-sm text-gray-500">{app.service_type}</p>
+                    {app.customer_properties && (
+                      <p className="text-sm text-gray-500">{[app.customer_properties.address_line, app.customer_properties.city].filter(Boolean).join(', ')}</p>
+                    )}
                   </div>
                   <div className="flex flex-col items-end space-y-2">
                     <span className="px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 uppercase">
                       {app.status}
                     </span>
-                    <button className="text-sm text-blue-600 hover:underline">Details</button>
+                    {app.customers?.phone && (
+                      <a href={`tel:${app.customers.phone}`} className="text-sm font-semibold text-blue-600 hover:underline">
+                        Call
+                      </a>
+                    )}
                   </div>
                 </div>
               ))
