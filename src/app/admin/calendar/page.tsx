@@ -87,10 +87,10 @@ export default function AdminCalendarPage() {
     loadData()
   }, [])
 
-  const handleOpenNew = () => {
+  const handleOpenNew = (customerId = '') => {
     setEditingId(null)
     setFormData({
-      customerId: '',
+      customerId,
       propertyId: '',
       assignedAdminId: '',
       serviceRequestId: '',
@@ -108,6 +108,15 @@ export default function AdminCalendarPage() {
     setSuccess(null)
     setShowModal(true)
   }
+
+  // Opened from a customer page ('Create ...'): start a new one for that customer
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    if (query.get('new') !== '1') return
+    handleOpenNew(query.get('customer') || '')
+    window.history.replaceState(null, '', window.location.pathname)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleOpenEdit = (apt: any) => {
     setEditingId(apt.id)
@@ -233,7 +242,7 @@ export default function AdminCalendarPage() {
           </div>
 
           <button
-            onClick={handleOpenNew}
+            onClick={() => handleOpenNew()}
             className="flex items-center space-x-1.5 bg-blue-600 text-white px-4 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-100"
           >
             <Plus size={16} />

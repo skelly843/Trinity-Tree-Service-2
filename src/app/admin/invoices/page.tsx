@@ -48,9 +48,9 @@ export default function AdminInvoicesPage() {
     loadInvoices()
   }, [])
 
-  const handleOpenNew = () => {
+  const handleOpenNew = (customerId = '') => {
     setFormData({
-      customerId: '',
+      customerId,
       jobId: '',
       total: '',
       status: 'draft',
@@ -58,6 +58,15 @@ export default function AdminInvoicesPage() {
     })
     setShowModal(true)
   }
+
+  // Opened from a customer page ('Create ...'): start a new one for that customer
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    if (query.get('new') !== '1') return
+    handleOpenNew(query.get('customer') || '')
+    window.history.replaceState(null, '', window.location.pathname)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -73,7 +82,9 @@ export default function AdminInvoicesPage() {
         {
           customer_id: formData.customerId,
           job_id: formData.jobId || null,
+          subtotal: amount,
           total: amount,
+          balance_due: amount,
           status: formData.status,
           notes: formData.notes,
           due_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] // default 14 days net
@@ -121,7 +132,7 @@ export default function AdminInvoicesPage() {
           <p className="text-slate-500 mt-1">Compile service bills, monitor due dates, and trigger payment reminders.</p>
         </div>
         <button
-          onClick={handleOpenNew}
+          onClick={() => handleOpenNew()}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center space-x-1.5 shadow-md shadow-blue-100"
         >
           <Plus size={16} />
