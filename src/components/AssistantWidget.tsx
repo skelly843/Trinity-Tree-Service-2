@@ -160,6 +160,8 @@ export default function AssistantWidget() {
 
   if (!audience) return null
 
+  // On public pages the owner's Edit button sits bottom-right, so Help moves up above it
+  const raised = audience === 'office' && !['/admin', '/employee', '/portal'].some((p) => pathname.startsWith(p))
   const inFirstWeek = firstWeekUntil > Date.now()
   const canTurnOff = audience === 'customer' || !inFirstWeek
   const firstWeekDate = new Date(firstWeekUntil).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
@@ -172,7 +174,7 @@ export default function AssistantWidget() {
         onClick={() => saveSettings({ tips_enabled: tipsOn, assistant_enabled: true })}
         title="Turn the help assistant back on"
         aria-label="Turn the help assistant back on"
-        className="fixed bottom-4 right-4 z-40 w-9 h-9 rounded-full bg-white/80 border border-slate-200 text-slate-400 hover:text-blue-600 shadow-sm flex items-center justify-center"
+        className={`fixed ${raised ? 'bottom-24' : 'bottom-4'} right-4 z-40 w-9 h-9 rounded-full bg-white/80 border border-slate-200 text-slate-400 hover:text-blue-600 shadow-sm flex items-center justify-center`}
       >
         <GraduationCap size={16} />
       </button>
@@ -180,7 +182,7 @@ export default function AssistantWidget() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 flex flex-col items-end gap-3 max-w-[calc(100vw-2rem)]">
+    <div className={`fixed ${raised ? 'bottom-24' : 'bottom-4'} right-4 z-40 flex flex-col items-end gap-3 max-w-[calc(100vw-2rem)]`}>
       {tip && !open && (
         <div role="status" className="w-80 max-w-full bg-white border border-slate-200 rounded-2xl shadow-xl p-4 space-y-3">
           <p className="text-sm text-slate-700 flex gap-2">

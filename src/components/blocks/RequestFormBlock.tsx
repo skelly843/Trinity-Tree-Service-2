@@ -1,5 +1,6 @@
 'use client'
 
+import { trackLead } from '@/utils/tracking'
 import React, { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Loader2, ShieldAlert } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
@@ -101,6 +102,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
         setError(requestErr.message)
       } else {
         setSuccess(true)
+        trackLead('service_request', formData.isEmergency)
         setFormData(EMPTY_FORM)
       }
     } catch (err: any) {

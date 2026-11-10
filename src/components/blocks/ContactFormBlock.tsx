@@ -1,5 +1,6 @@
 'use client'
 
+import { trackLead } from '@/utils/tracking'
 import React, { useState } from 'react'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
@@ -39,6 +40,7 @@ export default function ContactFormBlock({ data, editable, update }: BlockProps)
         setError(submitErr.message)
       } else {
         setSuccess(true)
+        trackLead('contact')
         setFormData({ name: '', email: '', phone: '', message: '' })
       }
     } catch (err: any) {

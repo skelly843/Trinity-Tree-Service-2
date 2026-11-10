@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { loadCompanyDetails } from '@/utils/seo'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -95,6 +96,9 @@ export default async function CustomerDashboard() {
   const openInvoices: any[] = (invRes as any).data || []
   const lastMessage: any = ((msgRes as any).data || [])[0]
   const visitsDone: number = (doneRes as any).count || 0
+  // Ask happy customers for a Google review once some work is done
+  const company = await loadCompanyDetails()
+  const reviewLink = company?.social_links?.google_review || ''
   const recentInvoices: any[] = (recentInvRes as any).data || []
   const balance = openInvoices.reduce((sum, i) => sum + Math.max(Number(i.total || 0) - Number(i.amount_paid || 0), 0), 0)
   const overdue = openInvoices.some((i) => i.status === 'overdue' || (i.due_date && new Date(`${i.due_date}T23:59:59`) < new Date()))
@@ -203,6 +207,24 @@ export default async function CustomerDashboard() {
             <p className="font-bold text-slate-900">{primary.full_name}</p>
           </div>
         </section>
+      )}
+
+      {reviewLink && visitsDone > 0 && (
+        <a
+          href={reviewLink}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center gap-4 p-4 rounded-2xl border border-amber-200 bg-amber-50 text-amber-900 hover:shadow-sm"
+        >
+          <span className="text-2xl" aria-hidden>
+            ★
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block font-bold">Happy with our work?</span>
+            <span className="block text-sm">A quick Google review helps your neighbors find us. Thank you!</span>
+          </span>
+          <ArrowRight size={18} className="shrink-0" />
+        </a>
       )}
 
       {/* What needs the customer's attention */}
