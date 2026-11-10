@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { Clock, Mail, Map as MapIcon, MapPin, Phone, ShieldAlert } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
 import { InlineText } from '@/components/admin/InlineText'
+import ServiceAreaMap, { type ServiceRadius } from '@/components/ServiceAreaMapLazy'
 import { ManageLink } from './shared'
 import type { BlockProps } from './types'
 
@@ -47,6 +48,9 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
   }, [])
 
   const areas: string[] = Array.isArray(settings.service_areas) ? settings.service_areas : []
+  const seasonal: string[] = Array.isArray(settings.seasonal_areas) ? settings.seasonal_areas : []
+  const radius: ServiceRadius | null =
+    settings.service_radius && typeof settings.service_radius.lat === 'number' ? settings.service_radius : null
 
   return (
     <section className="pt-16 pb-8">
@@ -83,12 +87,36 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
           </InfoCard>
         </div>
 
+        {radius && (
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+              <MapIcon size={18} className="text-blue-600" />
+              <span>
+                We serve within {Math.round(radius.miles)} miles of {radius.label || 'our base'}
+              </span>
+            </h3>
+            <ServiceAreaMap area={radius} />
+            {seasonal.length > 0 && (
+              <p className="text-sm text-slate-600">
+                <span className="font-bold text-slate-800">Seasonal and storm response: </span>
+                {seasonal.join(', ')}
+              </p>
+            )}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {!radius && seasonal.length > 0 && (
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-2">
+              <h3 className="font-bold text-slate-900 text-sm">Seasonal and storm response</h3>
+              <p className="text-sm text-slate-600">{seasonal.join(', ')}</p>
+            </div>
+          )}
           {areas.length > 0 && (
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-3">
               <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
                 <MapIcon size={16} className="text-blue-600" />
-                <span>Active Service Areas</span>
+                <span>Main Cities We Serve</span>
               </h3>
               <div className="flex flex-wrap gap-2">
                 {areas.map((area) => (
@@ -116,7 +144,7 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
           )}
         </div>
 
-        {editable && <ManageLink href="/admin/settings" label="Edit phone, email, hours & areas in Settings" />}
+        {editable && <ManageLink href="/admin/settings" label="Edit phone, email, service area and map in Business Settings" />}
       </div>
     </section>
   )

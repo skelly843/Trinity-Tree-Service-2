@@ -29,6 +29,10 @@ export interface CompanyDetails {
   address: string
   service_areas: string[]
   social_links: Record<string, string>
+  /** Circle on the map: center and radius in miles */
+  service_radius: { lat: number; lng: number; miles: number; label?: string } | null
+  /** Regions served part of the year, such as storm response */
+  seasonal_areas: string[]
 }
 
 /** Business details from Admin > Settings, read without cookies so pages stay cacheable. */
@@ -38,7 +42,8 @@ export const loadCompanyDetails = cache(async (): Promise<CompanyDetails | null>
     if (!supabase) return null
     const { data } = await supabase
       .from('company_settings')
-      .select('company_name, phone, email, address, service_areas, social_links')
+      // All columns, so this keeps working on databases without the newer service area columns
+      .select('*')
       .eq('id', 'default')
       .maybeSingle()
     if (!data) return null
@@ -48,7 +53,12 @@ export const loadCompanyDetails = cache(async (): Promise<CompanyDetails | null>
       email: data.email || '',
       address: data.address || '',
       service_areas: Array.isArray(data.service_areas) ? data.service_areas.filter(Boolean) : [],
-      social_links: data.social_links && typeof data.social_links === 'object' ? data.social_links : {}
+      social_links: data.social_links && typeof data.social_links === 'object' ? data.social_links : {},
+      service_radius:
+        data.service_radius && typeof data.service_radius.lat === 'number' && typeof data.service_radius.miles === 'number'
+          ? data.service_radius
+          : null,
+      seasonal_areas: Array.isArray(data.seasonal_areas) ? data.seasonal_areas.filter(Boolean) : []
     }
   } catch {
     return null
@@ -129,6 +139,21 @@ export async function businessJsonLd() {
   const [brand, company, services] = await Promise.all([loadSiteBrand(), loadCompanyDetails(), loadPublishedServices()])
   const url = siteUrl()
   const name = company?.company_name || brand.seo_title || brand.site_name
+  // Main cities, the map circle, and seasonal regions, in the shapes schema.org defines
+  const areaServed: Record<string, unknown>[] = [
+    ...(company?.service_areas || []).map((area) => ({ '@type': 'City', name: area })),
+    ...(company?.service_radius
+      ? [
+          {
+            '@type': 'GeoCircle',
+            ...(company.service_radius.label ? { name: `Within ${Math.round(company.service_radius.miles)} miles of ${company.service_radius.label}` } : {}),
+            geoMidpoint: { '@type': 'GeoCoordinates', latitude: company.service_radius.lat, longitude: company.service_radius.lng },
+            geoRadius: Math.round(company.service_radius.miles * 1609.344)
+          }
+        ]
+      : []),
+    ...(company?.seasonal_areas || []).map((area) => ({ '@type': 'AdministrativeArea', name: area }))
+  ]
   const sameAs = Object.values(company?.social_links || {}).filter((v) => typeof v === 'string' && /^https?:\/\//.test(v))
 
   const data: Record<string, unknown> = {
@@ -142,7 +167,7 @@ export async function businessJsonLd() {
     ...(company?.email ? { email: company.email } : {}),
     ...(brand.logo_url ? { logo: absoluteUrl(brand.logo_url), image: absoluteUrl(brand.logo_url) } : {}),
     ...(company?.address ? { address: { '@type': 'PostalAddress', streetAddress: company.address } } : {}),
-    ...(company?.service_areas.length ? { areaServed: company.service_areas.map((area) => ({ '@type': 'City', name: area })) } : {}),
+    ...(areaServed.length ? { areaServed } : {}),
     ...(sameAs.length ? { sameAs } : {}),
     ...(services.length
       ? {
