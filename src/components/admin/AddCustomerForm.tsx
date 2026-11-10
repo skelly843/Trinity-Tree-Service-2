@@ -32,19 +32,26 @@ export function AddCustomerForm() {
     setSaving(true)
     setError(null)
     setSaved(null)
-    const { data: created, error: insertError } = await createClient()
+    const supabase = createClient()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    // Assigned to whoever adds them, so admins and employees can see and work with
+    // customers they create (the owner sees every customer either way)
+    // The ID is made here rather than read back, since reading a row in the same request
+    // that creates it can be refused for staff who are not the owner
+    const id = crypto.randomUUID()
+    const { error: insertError } = await supabase
       .from('customers')
-      .insert([{ ...form, email: form.email.trim().toLowerCase() }])
-      .select('id')
-      .single()
-    if (insertError || !created) {
+      .insert([{ ...form, id, email: form.email.trim().toLowerCase(), assigned_admin_id: user?.id ?? null }])
+    if (insertError) {
       setSaving(false)
       setError(insertError?.message || 'The customer was not saved.')
       return
     }
     let note = 'They can now be picked on jobs, estimates and invoices.'
     if (invite) {
-      const result = await sendPortalInvite(created.id)
+      const result = await sendPortalInvite(id)
       note = result.ok ? `${result.message} They will appear under Customer Portal Access.` : `The invitation was not sent: ${result.message}`
     }
     setSaving(false)
