@@ -149,8 +149,8 @@ export default async function CustomerDashboard() {
       icon: UserCircle,
       label: 'My Profile',
       detail: upcoming.length
-        ? `${upcoming.length} upcoming visit${upcoming.length === 1 ? '' : 's'} · properties, jobs, documents`
-        : 'Properties, appointments, requests, jobs, documents'
+        ? `${upcoming.length} upcoming visit${upcoming.length === 1 ? '' : 's'} · properties, jobs, documents, photos`
+        : 'Properties, appointments, requests, jobs, documents, project photos'
     },
     {
       href: '/portal/invoices',

@@ -64,7 +64,7 @@ export const PHONE_GROUPS: Group[] = [
       { label: 'Requests', href: '/portal/requests' },
       { label: 'Jobs', href: '/portal/jobs' },
       { label: 'Documents', href: '/portal/documents' },
-      { label: 'Photos', href: '/portal/photos' }
+      { label: 'Project Photos', href: '/portal/photos' }
     ]
   },
   { id: 'finances', label: 'Finances', icon: Receipt, pages: FINANCES },
