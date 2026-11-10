@@ -1,4 +1,5 @@
-import { Mail, MapPin, Phone } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronRight, Mail, MapPin, Phone } from 'lucide-react'
 import { createClient } from '@/utils/supabase/server'
 
 /** The customers this worker is assigned to (the database returns no others). */
@@ -25,12 +26,16 @@ export default async function EmployeeCustomers() {
               : c.billing_address || ''
             return (
               <li key={c.id} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                <div>
-                  <p className="font-bold text-slate-900">
-                    {c.first_name} {c.last_name}
-                  </p>
-                  {c.business_name && <p className="text-sm text-slate-500">{c.business_name}</p>}
-                </div>
+                <Link href={`/employee/customers/${c.id}`} className="flex items-center justify-between gap-2">
+                  <span>
+                    <span className="block font-bold text-slate-900">
+                      {c.first_name} {c.last_name}
+                    </span>
+                    {c.business_name && <span className="block text-sm text-slate-500">{c.business_name}</span>}
+                    <span className="block text-sm font-semibold text-blue-700">Photos, notes, files and visits</span>
+                  </span>
+                  <ChevronRight size={18} className="text-slate-400 shrink-0" />
+                </Link>
                 <div className="flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
                   {c.phone && (
                     <a href={`tel:${c.phone}`} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100">

@@ -31,7 +31,7 @@ export default async function EmployeeToday() {
   const [visitsRes, jobsRes, earningsRes, payoutsRes] = await Promise.all([
     supabase
       .from('appointments')
-      .select('id, scheduled_at, service_type, status, notes, customers(first_name, last_name, phone), customer_properties(address_line, city)')
+      .select('id, customer_id, scheduled_at, service_type, status, notes, customers(first_name, last_name, phone), customer_properties(address_line, city)')
       .gte('scheduled_at', startOfToday.toISOString())
       .lte('scheduled_at', weekAhead.toISOString())
       .not('status', 'in', '(completed,cancelled,no_show)')
@@ -88,7 +88,9 @@ export default async function EmployeeToday() {
                         {dayLabel(when)} · {format(when, 'h:mm a')}
                       </p>
                       <p className="font-bold text-slate-900">{v.service_type}</p>
-                      <p className="text-sm text-slate-600">{name}</p>
+                      <Link href={`/employee/customers/${v.customer_id}`} className="text-sm font-semibold text-blue-700 underline">
+                        {name}
+                      </Link>
                     </div>
                     <span className="shrink-0 px-2 py-1 rounded-full text-[11px] font-bold uppercase bg-slate-100 text-slate-600">
                       {String(v.status).replace('_', ' ')}

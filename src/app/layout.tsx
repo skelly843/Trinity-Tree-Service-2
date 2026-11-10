@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/Header";
+import AssistantWidget from "@/components/AssistantWidget";
 import Footer from "@/components/Footer";
 import SiteTheme from "@/components/SiteTheme";
 import { WebsiteBuilderProvider } from '@/context/WebsiteBuilderContext'
@@ -57,6 +58,7 @@ export default async function RootLayout({
           <VisualEditorToolbar />
           <Header />
           <div className="flex-1 flex flex-col">{children}</div>
+          <AssistantWidget />
           <Footer />
           <GlobalEditorButton />
         </WebsiteBuilderProvider>
