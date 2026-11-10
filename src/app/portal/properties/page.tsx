@@ -1,10 +1,8 @@
 'use client'
 
-import { SiteName } from '@/components/SiteTheme'
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import Link from 'next/link'
-import { TreeDeciduous, ArrowLeft, Loader2, Home, Plus, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Loader2, Home, Plus, CheckCircle2, AlertCircle } from 'lucide-react'
 
 export default function CustomerPropertiesPage() {
   const supabase = createClient()
@@ -102,22 +100,10 @@ export default function CustomerPropertiesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b bg-white sticky top-0 z-50">
-        <Link href="/" className="flex items-center space-x-2">
-          <TreeDeciduous className="text-blue-600" size={32} />
-          <span className="text-2xl font-bold text-slate-900"><SiteName suffix=" Client Portal" /></span>
-        </Link>
-        <Link href="/portal" className="text-sm font-bold text-blue-600 hover:underline">
-          Portal Dashboard
-        </Link>
-      </header>
+    <div className="flex flex-col">
 
       <main className="max-w-4xl mx-auto px-6 py-12 w-full space-y-6">
         <div className="flex items-center justify-between">
-          <Link href="/portal" className="inline-flex items-center text-sm font-bold text-slate-500 hover:text-slate-800">
-            <ArrowLeft size={16} className="mr-1" /> Back to Dashboard
-          </Link>
           <button
             onClick={() => setShowModal(true)}
             className="flex items-center space-x-1.5 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md"

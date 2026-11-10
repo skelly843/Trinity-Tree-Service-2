@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react'
 import { createClient } from '@/utils/supabase/server'
+import PortalNav from '@/components/portal/PortalNav'
 
 /** Customer accounts stay on this screen until a global admin approves them. */
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
@@ -31,5 +32,10 @@ export default async function PortalLayout({ children }: { children: React.React
     }
   }
 
-  return <>{children}</>
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <PortalNav />
+      {children}
+    </div>
+  )
 }
