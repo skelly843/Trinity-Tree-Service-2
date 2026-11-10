@@ -3,6 +3,29 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, CheckCircle2 } from 'lucide-react'
 import { ZoomableImage } from '@/components/blocks/ZoomableImage'
+import type { Metadata } from 'next'
+import { absoluteUrl, areaList, clip, loadCompanyDetails, loadPublishedServices } from '@/utils/seo'
+import { loadSiteBrand } from '@/utils/supabase/loadSiteBrand'
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const [services, company, brand] = await Promise.all([loadPublishedServices(), loadCompanyDetails(), loadSiteBrand()])
+  const service: any = services.find((s: any) => s.slug === slug)
+  if (!service) return { robots: { index: false } }
+  const name = company?.company_name || brand.seo_title || brand.site_name
+  const areas = areaList(company?.service_areas || [])
+  const title = `${service.title}${areas ? ` in ${areas}` : ''} | ${name}`
+  const description = clip(`${service.short_description || service.title}${areas ? ` Serving ${areas}.` : ''} Call ${name}${company?.phone ? ` at ${company.phone}` : ''}.`)
+  const path = `/services/${service.slug}`
+  const image = service.featured_image || brand.logo_url
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: path },
+    openGraph: { type: 'website', url: path, siteName: name, title, description, ...(image ? { images: [{ url: absoluteUrl(image) }] } : {}) },
+    twitter: { card: image ? 'summary_large_image' : 'summary', title, description }
+  }
+}
 
 export default async function ServiceDetailPage({
   params,
