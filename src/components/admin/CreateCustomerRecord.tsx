@@ -20,9 +20,13 @@ export function CreateCustomerRecord({ fullName, email }: { fullName: string; em
     const parts = (fullName || '').trim().split(/\s+/).filter(Boolean)
     const first = parts[0] || email.split('@')[0]
     const last = parts.slice(1).join(' ') || '-'
-    const { error: insertError } = await createClient()
+    const supabase = createClient()
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    const { error: insertError } = await supabase
       .from('customers')
-      .insert([{ first_name: first, last_name: last, email: email.trim().toLowerCase() }])
+      .insert([{ first_name: first, last_name: last, email: email.trim().toLowerCase(), assigned_admin_id: user?.id ?? null }])
     setSaving(false)
     if (insertError) {
       setError(insertError.message)
