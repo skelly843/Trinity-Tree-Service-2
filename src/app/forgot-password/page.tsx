@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/utils/supabase/client'
+import { createClient } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Loader2, Mail, TreeDeciduous } from 'lucide-react'
 
@@ -18,7 +18,12 @@ export default function ForgotPasswordPage() {
     setSuccess(false)
 
     try {
-      const supabase = createClient()
+      // Implicit flow puts the sign-in tokens in the email link itself, so the link works in
+      // any browser or device. (The default PKCE flow only works in the browser that asked
+      // for the reset, which fails when the email opens in another browser or on a phone.)
+      const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+        auth: { flowType: 'implicit', persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      })
       const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })

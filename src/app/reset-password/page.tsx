@@ -47,6 +47,9 @@ async function signInFromResetLink(): Promise<string | null> {
   // The browser client may already have signed in from the link on its own
   const { data } = await supabase.auth.getSession()
   if (data.session) return null
+  if (failure && /verifier/i.test(failure)) {
+    return 'This reset link was opened in a different browser than the one used to request it. Request a new link below; new links work in any browser.'
+  }
   return failure && !/expired|invalid/i.test(failure)
     ? failure
     : 'This reset link has expired or was already used. Links work once, and only in the browser where the reset was requested.'
