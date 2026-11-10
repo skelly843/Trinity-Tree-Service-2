@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { Settings, Save, Loader2, CheckCircle2, AlertCircle, MapPin, Search, Share2 } from 'lucide-react'
+import { Settings, Save, Loader2, CheckCircle2, AlertCircle, MapPin, Search, Share2, Crosshair } from 'lucide-react'
+import ServiceAreaMap, { type ServiceRadius } from '@/components/ServiceAreaMapLazy'
 
 const SOCIAL_FIELDS: { key: string; label: string; placeholder: string }[] = [
   { key: 'google', label: 'Google Business Profile', placeholder: 'https://g.page/… or https://maps.app.goo.gl/…' },
@@ -35,6 +36,11 @@ export default function AdminSettingsPage() {
   // Typed as one line, saved as a list
   const [areasText, setAreasText] = useState('')
   const [social, setSocial] = useState<Record<string, string>>({})
+  const [radius, setRadius] = useState<ServiceRadius | null>(null)
+  const [placeQuery, setPlaceQuery] = useState('')
+  const [placeError, setPlaceError] = useState<string | null>(null)
+  const [finding, setFinding] = useState(false)
+  const [seasonalText, setSeasonalText] = useState('')
 
   useEffect(() => {
     async function loadSettings() {
@@ -55,12 +61,37 @@ export default function AdminSettingsPage() {
         })
         setAreasText((data.service_areas || []).join(', '))
         setSocial(data.social_links && typeof data.social_links === 'object' ? data.social_links : {})
+        if (data.service_radius && typeof data.service_radius.lat === 'number') {
+          setRadius(data.service_radius)
+          setPlaceQuery(data.service_radius.label || '')
+        }
+        setSeasonalText((data.seasonal_areas || []).join(', '))
       }
       setFetching(false)
     }
     loadSettings()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // Looks a town up on OpenStreetMap so the admin does not need coordinates
+  const findPlace = async () => {
+    const q = placeQuery.trim()
+    if (!q) return
+    setFinding(true)
+    setPlaceError(null)
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=1&q=${encodeURIComponent(q)}`, {
+        headers: { Accept: 'application/json' }
+      })
+      const results = await res.json()
+      if (!Array.isArray(results) || results.length === 0) throw new Error('That place was not found. Try "City, State".')
+      setRadius((prev) => ({ lat: Number(results[0].lat), lng: Number(results[0].lon), miles: prev?.miles || 100, label: q }))
+    } catch (err: any) {
+      setPlaceError(err?.message || 'The map search is not available right now. Click the map instead.')
+    } finally {
+      setFinding(false)
+    }
+  }
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +100,7 @@ export default function AdminSettingsPage() {
     setSuccess(false)
 
     const serviceAreas = areasText.split(/[,\n]/).map((a) => a.trim()).filter(Boolean)
+    const seasonalAreas = seasonalText.split(/[,\n]/).map((a) => a.trim()).filter(Boolean)
     const socialLinks = Object.fromEntries(
       Object.entries(social).map(([k, v]) => [k, v.trim()]).filter(([, v]) => /^https?:\/\//i.test(v))
     )
@@ -77,6 +109,8 @@ export default function AdminSettingsPage() {
       id: 'default',
       ...settings,
       service_areas: serviceAreas,
+      service_radius: radius ? { ...radius, miles: Math.round(radius.miles), label: placeQuery.trim() || radius.label || '' } : null,
+      seasonal_areas: seasonalAreas,
       social_links: socialLinks,
       updated_at: new Date().toISOString()
     })
@@ -162,15 +196,75 @@ export default function AdminSettingsPage() {
             <MapPin className="mr-2 text-slate-400" size={18} />
             Service Area
           </h2>
+          <div className="space-y-1.5">
+            <span className={label}>Service radius</span>
+            <div className="flex flex-wrap gap-2">
+              <input
+                type="text"
+                value={placeQuery}
+                onChange={(e) => setPlaceQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    findPlace()
+                  }
+                }}
+                className={`${input} flex-1 min-w-[12rem]`}
+                placeholder="Center of your service area, e.g. Waco, TX"
+              />
+              <button
+                type="button"
+                onClick={findPlace}
+                disabled={finding || !placeQuery.trim()}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold bg-slate-900 text-white disabled:opacity-50"
+              >
+                {finding ? <Loader2 className="animate-spin" size={16} /> : <Crosshair size={16} />}
+                Find on map
+              </button>
+              {radius && (
+                <button type="button" onClick={() => setRadius(null)} className="px-3 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-red-600">
+                  Remove
+                </button>
+              )}
+            </div>
+            {placeError && <p role="alert" className="text-xs font-medium text-red-600">{placeError}</p>}
+          </div>
+
+          {radius ? (
+            <div className="space-y-3">
+              <ServiceAreaMap area={radius} onPick={(lat, lng) => setRadius({ ...radius, lat, lng })} />
+              <label className="block space-y-1.5">
+                <span className={label}>Radius: {Math.round(radius.miles)} miles</span>
+                <input
+                  type="range"
+                  min={10}
+                  max={600}
+                  step={5}
+                  value={radius.miles}
+                  onChange={(e) => setRadius({ ...radius, miles: Number(e.target.value) })}
+                  className="w-full accent-blue-600"
+                />
+              </label>
+              <p className="text-xs text-slate-500">Click the map to move the center. Visitors see this circle on the Contact page.</p>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500">Type the town at the center of your service area and click Find on map, then set the radius.</p>
+          )}
+
           <label className="space-y-1.5 block">
-            <span className={label}>Towns and cities you serve</span>
-            <input type="text" value={areasText} onChange={(e) => setAreasText(e.target.value)} className={input} placeholder="e.g. Waco, Temple, Belton, Killeen" />
+            <span className={label}>Main cities to be found in</span>
+            <input type="text" value={areasText} onChange={(e) => setAreasText(e.target.value)} className={input} placeholder="e.g. Dallas, Houston, Waco, Austin" />
+            <span className="block text-xs text-slate-500">
+              Separate with commas, biggest first. The first three are added to page titles (for example &quot;Tree Removal in
+              Dallas, Houston and Waco&quot;). Search engines match searches by city name, so list the cities people search from.
+            </span>
           </label>
-          <p className="text-xs text-slate-500">
-            Separate with commas, most important first. The first three are added to page titles and descriptions (for
-            example &quot;Tree Removal in Waco, Temple and Belton&quot;), and all of them are shown on the Contact page and given to
-            search engines.
-          </p>
+
+          <label className="space-y-1.5 block">
+            <span className={label}>Seasonal or storm response areas (optional)</span>
+            <input type="text" value={seasonalText} onChange={(e) => setSeasonalText(e.target.value)} className={input} placeholder="e.g. Louisiana, Mississippi, Florida" />
+            <span className="block text-xs text-slate-500">States or regions you travel to, such as during hurricane season. Shown on the Contact page and given to search engines.</span>
+          </label>
         </div>
 
         <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-4">
