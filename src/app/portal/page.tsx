@@ -4,15 +4,23 @@ import Link from 'next/link'
 import { format } from 'date-fns'
 import {
   ArrowRight,
-  CalendarCheck,
+  Calendar,
   CheckCircle2,
+  Clock,
+  CreditCard,
   FileCheck,
   FileText,
   FolderOpen,
+  History,
+  Home,
+  Camera,
   MessageSquare,
   Plus,
   Receipt,
-  UserCircle
+  Briefcase,
+  User,
+  UserCircle,
+  Wallet
 } from 'lucide-react'
 
 function money(n: number) {
@@ -41,7 +49,7 @@ export default async function CustomerDashboard() {
   }
 
   const nowIso = new Date().toISOString()
-  const [apptRes, estRes, invRes, msgRes, docRes] = customer
+  const [apptRes, estRes, invRes, msgRes, docRes, doneRes, recentInvRes] = customer
     ? await Promise.all([
         supabase
           .from('appointments')
@@ -64,9 +72,17 @@ export default async function CustomerDashboard() {
           .eq('visibility', 'customer_visible')
           .order('created_at', { ascending: false })
           .limit(1),
-        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('customer_id', customer.id).eq('is_visible_to_customer', true)
+        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('customer_id', customer.id).eq('is_visible_to_customer', true),
+        supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('customer_id', customer.id).eq('status', 'completed'),
+        supabase
+          .from('invoices')
+          .select('id, invoice_number, total, amount_paid, status, notes, issue_date')
+          .eq('customer_id', customer.id)
+          .neq('status', 'draft')
+          .order('created_at', { ascending: false })
+          .limit(3)
       ])
-    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { count: 0 }]
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { count: 0 }, { count: 0 }, { data: [] }]
 
   const upcoming: any[] = (apptRes as any).data || []
 
@@ -78,7 +94,8 @@ export default async function CustomerDashboard() {
   const openEstimates: any[] = (estRes as any).data || []
   const openInvoices: any[] = (invRes as any).data || []
   const lastMessage: any = ((msgRes as any).data || [])[0]
-  const docCount: number = (docRes as any).count || 0
+  const visitsDone: number = (doneRes as any).count || 0
+  const recentInvoices: any[] = (recentInvRes as any).data || []
   const balance = openInvoices.reduce((sum, i) => sum + Math.max(Number(i.total || 0) - Number(i.amount_paid || 0), 0), 0)
   const overdue = openInvoices.some((i) => i.status === 'overdue' || (i.due_date && new Date(`${i.due_date}T23:59:59`) < new Date()))
   const officeWroteLast = lastMessage && lastMessage.author_id !== user.id
@@ -109,22 +126,45 @@ export default async function CustomerDashboard() {
     }
   ].filter(Boolean) as { href: string; icon: any; tone: string; title: string; detail: string }[]
 
-  const sections = [
+  // Computer view: every section as its own tile, like a classic dashboard
+  const allSections = [
+    { label: 'My Profile', href: '/portal/profile', icon: User },
+    { label: 'My Properties', href: '/portal/properties', icon: Home },
+    { label: 'My Appointments', href: '/portal/appointments', icon: Calendar },
+    { label: 'My Requests', href: '/portal/requests', icon: Clock },
+    { label: 'My Jobs', href: '/portal/jobs', icon: Briefcase },
+    { label: 'My Estimates', href: '/portal/estimates', icon: FileCheck },
+    { label: 'My Invoices', href: '/portal/invoices', icon: FileText },
+    { label: 'My Payments', href: '/portal/payments', icon: CreditCard },
+    { label: 'My Receipts', href: '/portal/receipts', icon: Receipt },
+    { label: 'My Project Photos', href: '/portal/photos', icon: Camera },
+    { label: 'My Documents', href: '/portal/documents', icon: FolderOpen },
+    { label: 'Messages & Notes', href: '/portal/notes', icon: MessageSquare }
+  ]
+
+  // Phone view: three big choices
+  const phoneSections = [
     {
-      href: '/portal/appointments',
-      icon: CalendarCheck,
-      label: 'Services',
-      detail: upcoming.length ? `${upcoming.length} upcoming visit${upcoming.length === 1 ? '' : 's'}` : 'Appointments, jobs and requests'
+      href: '/portal/profile',
+      icon: UserCircle,
+      label: 'My Profile',
+      detail: upcoming.length
+        ? `${upcoming.length} upcoming visit${upcoming.length === 1 ? '' : 's'} · properties, jobs, documents, photos`
+        : 'Properties, appointments, requests, jobs, documents, project photos'
     },
     {
       href: '/portal/invoices',
-      icon: Receipt,
-      label: 'Billing',
-      detail: balance > 0 ? `${money(balance)} due` : 'Estimates, invoices and payments'
+      icon: Wallet,
+      label: 'My Finances',
+      detail: balance > 0 ? `${money(balance)} due · estimates, invoices, payments` : 'Estimates, invoices, payments, receipts'
     },
-    { href: '/portal/documents', icon: FolderOpen, label: 'Files', detail: docCount ? `${docCount} shared file${docCount === 1 ? '' : 's'}` : 'Documents and photos' },
-    { href: '/portal/notes', icon: MessageSquare, label: 'Messages', detail: 'Talk with our office' },
-    { href: '/portal/profile', icon: UserCircle, label: 'Account', detail: 'Your details and properties' }
+    { href: '/portal/notes', icon: MessageSquare, label: 'Messages & Notes', detail: 'Talk with our office' }
+  ]
+
+  const stats = [
+    { label: 'Upcoming Visits', value: String(upcoming.length), icon: Calendar, color: 'bg-blue-600' },
+    { label: 'Visits Completed', value: String(visitsDone), icon: History, color: 'bg-green-600' },
+    { label: 'Balance Due', value: money(balance), icon: FileText, color: balance > 0 ? 'bg-red-500' : 'bg-slate-400' }
   ]
 
   return (
@@ -223,24 +263,96 @@ export default async function CustomerDashboard() {
         )}
       </section>
 
-      {/* The five sections */}
-      <section aria-label="Portal sections" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-        {sections.map((s) => (
+      {/* Phone: three big choices */}
+      <section aria-label="Portal sections" className="grid gap-3 sm:hidden">
+        {phoneSections.map((sec) => (
           <Link
-            key={s.href}
-            href={s.href}
-            className="flex lg:flex-col items-center lg:items-start gap-4 lg:gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition-all"
+            key={sec.href}
+            href={sec.href}
+            className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm active:bg-slate-50"
           >
-            <span className="p-2.5 rounded-xl bg-blue-50 text-blue-600 shrink-0">
-              <s.icon size={20} />
+            <span className="p-3 rounded-xl bg-blue-50 text-blue-600 shrink-0">
+              <sec.icon size={24} />
             </span>
-            <span className="min-w-0">
-              <span className="block font-bold text-slate-900">{s.label}</span>
-              <span className="block text-sm text-slate-500">{s.detail}</span>
+            <span className="min-w-0 flex-1">
+              <span className="block font-bold text-slate-900">{sec.label}</span>
+              <span className="block text-sm text-slate-500">{sec.detail}</span>
             </span>
+            <ArrowRight size={18} className="text-slate-400 shrink-0" />
           </Link>
         ))}
       </section>
+
+      {/* Computer: the detailed dashboard */}
+      <div className="hidden sm:block space-y-8">
+        <section aria-label="Summary" className="grid grid-cols-3 gap-6">
+          {stats.map((stat) => (
+            <div key={stat.label} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+              <span className={`p-3 rounded-xl ${stat.color} text-white`}>
+                <stat.icon size={24} />
+              </span>
+              <span>
+                <span className="block text-sm font-medium text-slate-500">{stat.label}</span>
+                <span className="block text-2xl font-black text-slate-900">{stat.value}</span>
+              </span>
+            </div>
+          ))}
+        </section>
+
+        <section aria-labelledby="all-sections" className="space-y-4">
+          <h2 id="all-sections" className="font-extrabold text-slate-900 text-lg">
+            My Portal Sections
+          </h2>
+          <div className="grid grid-cols-3 lg:grid-cols-4 gap-4">
+            {allSections.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center gap-3 group"
+              >
+                <span className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  <item.icon size={20} />
+                </span>
+                <span className="text-xs font-bold text-slate-700">{item.label}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-white rounded-2xl border border-slate-200 shadow-sm" aria-labelledby="recent-invoices">
+          <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+            <h2 id="recent-invoices" className="font-bold text-slate-900">
+              Recent invoices
+            </h2>
+            <Link href="/portal/invoices" className="text-sm font-bold text-blue-600 hover:underline">
+              See all
+            </Link>
+          </div>
+          {recentInvoices.length ? (
+            <ul className="divide-y divide-slate-100">
+              {recentInvoices.map((inv) => (
+                <li key={inv.id} className="px-5 py-4 flex items-center justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-800">
+                      Invoice #{inv.invoice_number} · {money(Number(inv.total || 0))}
+                    </p>
+                    <p className="text-sm text-slate-500 truncate">{inv.notes || 'Service invoice'}</p>
+                  </div>
+                  <span
+                    className={`shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider ${
+                      inv.status === 'paid' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+                    }`}
+                  >
+                    {inv.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="px-5 py-8 text-center text-slate-400">No invoices yet.</p>
+          )}
+        </section>
+      </div>
     </main>
   )
 }
