@@ -1,227 +1,221 @@
-import { SiteName } from '@/components/SiteTheme'
 import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
-import {
-  Calendar,
-  Clock,
-  FileText,
-  MessageSquare,
-  History,
-  ArrowRight,
-  TreeDeciduous,
-  User,
-  Home,
-  FileCheck,
-  CreditCard,
-  Receipt,
-  Camera,
-  FolderOpen
-} from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import {
+  ArrowRight,
+  CalendarCheck,
+  CheckCircle2,
+  FileCheck,
+  FileText,
+  FolderOpen,
+  MessageSquare,
+  Plus,
+  Receipt,
+  UserCircle
+} from 'lucide-react'
 
+function money(n: number) {
+  return n.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+}
+
+/** Customer home: what needs their attention first, then the five portal sections. */
 export default async function CustomerDashboard() {
   const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
   if (!user) return redirect('/login')
 
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single()
+  const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).maybeSingle()
 
-  // Match customer record by email
-  const { data: customer } = await supabase
-    .from('customers')
-    .select('*')
-    .eq('email', user.email || '')
-    .limit(1)
-    .maybeSingle()
-
-  const customerId = customer?.id || null
-
-  // Fetch appointments, invoices, jobs, notes
-  let appointments: any[] = []
-  let invoices: any[] = []
-
-  if (customerId) {
-    const { data: apts } = await supabase
-      .from('appointments')
-      .select('*')
-      .eq('customer_id', customerId)
-      .order('scheduled_at', { ascending: false })
-      .limit(3)
-    appointments = apts || []
-
-    const { data: invs } = await supabase
-      .from('invoices')
-      .select('*')
-      .eq('customer_id', customerId)
-      .order('created_at', { ascending: false })
-      .limit(3)
-    invoices = invs || []
+  // The customer record linked to this login (by link, or the same email)
+  let customer: any = null
+  if ((profile as any)?.customer_id) {
+    const { data } = await supabase.from('customers').select('*').eq('id', (profile as any).customer_id).maybeSingle()
+    customer = data
+  }
+  if (!customer && user.email) {
+    const { data } = await supabase.from('customers').select('*').eq('email', user.email.toLowerCase()).limit(1).maybeSingle()
+    customer = data
   }
 
-  const stats = [
-    { label: 'Upcoming Jobs', value: appointments.filter(a => ['pending', 'confirmed', 'in_progress'].includes(a.status || '')).length, icon: Calendar, color: 'bg-blue-500' },
-    { label: 'Total Visits', value: appointments.filter(a => a.status === 'completed').length, icon: History, color: 'bg-green-500' },
-    { label: 'Unpaid Invoices', value: invoices.filter(i => i.status === 'unpaid' || i.status === 'sent').length, icon: FileText, color: 'bg-red-500' },
-  ]
+  const nowIso = new Date().toISOString()
+  const [apptRes, estRes, invRes, msgRes, docRes] = customer
+    ? await Promise.all([
+        supabase
+          .from('appointments')
+          .select('id, service_type, scheduled_at, status')
+          .eq('customer_id', customer.id)
+          .gte('scheduled_at', nowIso)
+          .in('status', ['pending', 'confirmed', 'in_progress'])
+          .order('scheduled_at', { ascending: true })
+          .limit(3),
+        supabase.from('estimates').select('id, status').eq('customer_id', customer.id).in('status', ['sent', 'viewed']),
+        supabase
+          .from('invoices')
+          .select('id, total, amount_paid, status, due_date')
+          .eq('customer_id', customer.id)
+          .in('status', ['sent', 'partial', 'overdue']),
+        supabase
+          .from('notes')
+          .select('id, content, author_id, created_at')
+          .eq('customer_id', customer.id)
+          .eq('visibility', 'customer_visible')
+          .order('created_at', { ascending: false })
+          .limit(1),
+        supabase.from('documents').select('id', { count: 'exact', head: true }).eq('customer_id', customer.id).eq('is_visible_to_customer', true)
+      ])
+    : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { count: 0 }]
 
-  const portalNav = [
-    { label: 'My Profile', href: '/portal/profile', icon: User },
-    { label: 'My Properties', href: '/portal/properties', icon: Home },
-    { label: 'My Appointments', href: '/portal/appointments', icon: Calendar },
-    { label: 'My Requests', href: '/portal/requests', icon: Clock },
-    { label: 'My Jobs', href: '/portal/jobs', icon: TreeDeciduous },
-    { label: 'My Estimates', href: '/portal/estimates', icon: FileCheck },
-    { label: 'My Invoices', href: '/portal/invoices', icon: FileText },
-    { label: 'My Payments', href: '/portal/payments', icon: CreditCard },
-    { label: 'My Receipts', href: '/portal/receipts', icon: Receipt },
-    { label: 'My Project Photos', href: '/portal/photos', icon: Camera },
-    { label: 'My Documents', href: '/portal/documents', icon: FolderOpen },
-    { label: 'Messages & Notes', href: '/portal/notes', icon: MessageSquare },
+  const upcoming: any[] = (apptRes as any).data || []
+  const openEstimates: any[] = (estRes as any).data || []
+  const openInvoices: any[] = (invRes as any).data || []
+  const lastMessage: any = ((msgRes as any).data || [])[0]
+  const docCount: number = (docRes as any).count || 0
+  const balance = openInvoices.reduce((sum, i) => sum + Math.max(Number(i.total || 0) - Number(i.amount_paid || 0), 0), 0)
+  const overdue = openInvoices.some((i) => i.status === 'overdue' || (i.due_date && new Date(`${i.due_date}T23:59:59`) < new Date()))
+  const officeWroteLast = lastMessage && lastMessage.author_id !== user.id
+
+  const firstName = (profile?.full_name || customer?.first_name || '').split(' ')[0]
+
+  const attention = [
+    openEstimates.length > 0 && {
+      href: '/portal/estimates',
+      icon: FileCheck,
+      tone: 'bg-amber-50 text-amber-700 border-amber-200',
+      title: openEstimates.length === 1 ? 'An estimate is waiting for your answer' : `${openEstimates.length} estimates are waiting for your answer`,
+      detail: 'Review the work and approve the items you want.'
+    },
+    balance > 0 && {
+      href: '/portal/invoices',
+      icon: FileText,
+      tone: overdue ? 'bg-red-50 text-red-700 border-red-200' : 'bg-blue-50 text-blue-700 border-blue-200',
+      title: `${money(balance)} ${overdue ? 'is past due' : 'is due'}`,
+      detail: `${openInvoices.length} open invoice${openInvoices.length === 1 ? '' : 's'}`
+    },
+    officeWroteLast && {
+      href: '/portal/notes',
+      icon: MessageSquare,
+      tone: 'bg-blue-50 text-blue-700 border-blue-200',
+      title: 'New message from our office',
+      detail: String(lastMessage.content).slice(0, 90) + (String(lastMessage.content).length > 90 ? '…' : '')
+    }
+  ].filter(Boolean) as { href: string; icon: any; tone: string; title: string; detail: string }[]
+
+  const sections = [
+    {
+      href: '/portal/appointments',
+      icon: CalendarCheck,
+      label: 'Services',
+      detail: upcoming.length ? `${upcoming.length} upcoming visit${upcoming.length === 1 ? '' : 's'}` : 'Appointments, jobs and requests'
+    },
+    {
+      href: '/portal/invoices',
+      icon: Receipt,
+      label: 'Billing',
+      detail: balance > 0 ? `${money(balance)} due` : 'Estimates, invoices and payments'
+    },
+    { href: '/portal/documents', icon: FolderOpen, label: 'Files', detail: docCount ? `${docCount} shared file${docCount === 1 ? '' : 's'}` : 'Documents and photos' },
+    { href: '/portal/notes', icon: MessageSquare, label: 'Messages', detail: 'Talk with our office' },
+    { href: '/portal/profile', icon: UserCircle, label: 'Account', detail: 'Your details and properties' }
   ]
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="px-6 lg:px-12 h-20 flex items-center justify-between border-b bg-white sticky top-0 z-50 shadow-sm">
-        <Link href="/" className="flex items-center space-x-2">
-          <TreeDeciduous className="text-blue-600" size={32} />
-          <span className="text-2xl font-bold text-slate-900 tracking-tight"><SiteName suffix=" Client Portal" /></span>
+    <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-8">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{firstName ? `Hi, ${firstName}` : 'Welcome'}</h1>
+          <p className="text-slate-500 mt-1">Here&apos;s what&apos;s happening with your service.</p>
+        </div>
+        <Link
+          href="/request-service"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-xl font-bold shadow-sm flex items-center justify-center gap-2"
+        >
+          <Plus size={18} /> Request Service
         </Link>
-        <div className="flex items-center space-x-4">
-          <span className="text-sm font-bold text-slate-700">Hello, {profile?.full_name || 'Client'}</span>
-          <form action="/auth/signout" method="post">
-            <button type="submit" className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg">
-              Sign Out
-            </button>
-          </form>
-        </div>
-      </header>
+      </div>
 
-      <main className="max-w-6xl mx-auto px-6 py-12 space-y-12">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-slate-900">Dashboard</h1>
-            <p className="text-slate-500 mt-1">Manage your plumbing & contracting jobs, properties, estimates, and billing.</p>
-          </div>
-          <Link
-            href="/request-service"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-100 flex items-center justify-center space-x-2"
-          >
-            <TreeDeciduous size={20} />
-            <span>Request New Service</span>
-          </Link>
+      {!customer && (
+        <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl text-sm text-amber-900">
+          Your login isn&apos;t linked to a customer account yet. Our office will connect it shortly; until then your
+          appointments and invoices won&apos;t show here.
         </div>
+      )}
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {stats.map((stat) => (
-            <div key={stat.label} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-              <div className="flex items-center space-x-4">
-                <div className={`p-3 rounded-xl ${stat.color} text-white`}>
-                  <stat.icon size={24} />
+      {/* What needs the customer's attention */}
+      <section className="space-y-3" aria-labelledby="attention">
+        <h2 id="attention" className="text-sm font-bold uppercase tracking-wider text-slate-500">
+          Needs your attention
+        </h2>
+        {attention.length > 0 ? (
+          <div className="grid gap-3 md:grid-cols-2">
+            {attention.map((item) => (
+              <Link key={item.href} href={item.href} className={`flex items-center gap-4 p-4 rounded-2xl border ${item.tone} hover:shadow-sm`}>
+                <item.icon size={22} className="shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold">{item.title}</p>
+                  <p className="text-sm opacity-80 truncate">{item.detail}</p>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-slate-500">{stat.label}</p>
-                  <p className="text-2xl font-black text-slate-900">{stat.value}</p>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Portal section links */}
-        <div className="space-y-4">
-          <h3 className="font-extrabold text-slate-900 text-lg">My Portal Sections</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {portalNav.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all flex flex-col items-center text-center space-y-3 group"
-              >
-                <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                  <item.icon size={20} />
-                </div>
-                <span className="text-xs font-bold text-slate-700">{item.label}</span>
+                <ArrowRight size={18} className="shrink-0" />
               </Link>
             ))}
           </div>
-        </div>
-
-        {/* Quick Lists */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Appointments */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center">
-                <Clock className="mr-2 text-slate-400" size={20} />
-                Recent Appointments
-              </h2>
-              <Link href="/portal/appointments" className="text-sm font-bold text-blue-600 hover:underline">View All</Link>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {appointments.map((apt) => (
-                <div key={apt.id} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center space-x-4">
-                     <div className={`w-2 h-12 rounded-full ${apt.status === 'completed' ? 'bg-green-400' : 'bg-blue-400'}`} />
-                     <div>
-                       <p className="font-bold text-slate-800">{apt.service_type}</p>
-                       <p className="text-xs text-slate-500">{format(new Date(apt.scheduled_at), 'PPP p')}</p>
-                     </div>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                    apt.status === 'completed' ? 'text-green-600 bg-green-50 border-green-100' : 'text-blue-600 bg-blue-50 border-blue-100'
-                  }`}>
-                    {apt.status}
-                  </span>
-                </div>
-              ))}
-              {appointments.length === 0 && (
-                <div className="p-12 text-center text-slate-400">
-                  No appointment history yet.
-                </div>
-              )}
-            </div>
+        ) : (
+          <div className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200 text-slate-600">
+            <CheckCircle2 size={20} className="text-green-600 shrink-0" />
+            <span className="font-semibold">You&apos;re all caught up.</span>
           </div>
+        )}
+      </section>
 
-          {/* Latest Invoices */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900 flex items-center">
-                <FileText className="mr-2 text-slate-400" size={20} />
-                Recent Invoices
-              </h2>
-              <Link href="/portal/invoices" className="text-sm font-bold text-blue-600 hover:underline">View All</Link>
-            </div>
-            <div className="divide-y divide-slate-50">
-              {invoices.map((inv) => (
-                <div key={inv.id} className="p-6 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                  <div>
-                    <p className="font-bold text-slate-800">${inv.total || inv.amount}</p>
-                    <p className="text-xs text-slate-500">{inv.notes || 'Service Invoice'}</p>
-                  </div>
-                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-                    inv.status === 'paid' ? 'text-green-600 bg-green-50 border-green-100' : 'text-red-600 bg-red-50 border-red-100'
-                  }`}>
-                    {inv.status}
-                  </span>
-                </div>
-              ))}
-              {invoices.length === 0 && (
-                <div className="p-12 text-center text-slate-400">
-                  No invoices found.
-                </div>
-              )}
-            </div>
-          </div>
+      {/* Next visits */}
+      <section className="bg-white rounded-2xl border border-slate-200 shadow-sm" aria-labelledby="upcoming">
+        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+          <h2 id="upcoming" className="font-bold text-slate-900">
+            Upcoming visits
+          </h2>
+          <Link href="/portal/appointments" className="text-sm font-bold text-blue-600 hover:underline">
+            See all
+          </Link>
         </div>
-      </main>
-    </div>
+        {upcoming.length ? (
+          <ul className="divide-y divide-slate-100">
+            {upcoming.map((apt) => (
+              <li key={apt.id} className="px-5 py-4 flex items-center justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="font-bold text-slate-800 truncate">{apt.service_type}</p>
+                  <p className="text-sm text-slate-500">{format(new Date(apt.scheduled_at), 'EEE, MMM d · h:mm a')}</p>
+                </div>
+                <span className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
+                  {String(apt.status).replace('_', ' ')}
+                </span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="px-5 py-8 text-center text-slate-400">No visits scheduled.</p>
+        )}
+      </section>
+
+      {/* The five sections */}
+      <section aria-label="Portal sections" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+        {sections.map((s) => (
+          <Link
+            key={s.href}
+            href={s.href}
+            className="flex lg:flex-col items-center lg:items-start gap-4 lg:gap-3 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition-all"
+          >
+            <span className="p-2.5 rounded-xl bg-blue-50 text-blue-600 shrink-0">
+              <s.icon size={20} />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-bold text-slate-900">{s.label}</span>
+              <span className="block text-sm text-slate-500">{s.detail}</span>
+            </span>
+          </Link>
+        ))}
+      </section>
+    </main>
   )
 }
