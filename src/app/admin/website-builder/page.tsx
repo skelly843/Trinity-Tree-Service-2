@@ -28,7 +28,7 @@ const CONTENT = [
   { title: 'Services', desc: 'Add or change the services you offer.', href: '/admin/services', icon: Wrench },
   { title: 'Gallery Projects', desc: 'Add project photos. Tick Published to show them.', href: '/admin/gallery', icon: ImageIcon },
   { title: 'Menu & Media', desc: 'Change the top menu links and manage uploaded files.', href: '/admin/content', icon: Link2 },
-  { title: 'Business Details', desc: 'Phone, email, address, hours and service areas.', href: '/admin/settings', icon: Settings }
+  { title: 'Business Settings', desc: 'Phone, email, address, service area, social profiles and search title.', href: '/admin/settings', icon: Settings }
 ]
 
 export default async function WebsiteBuilderDashboard() {

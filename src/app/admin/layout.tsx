@@ -80,6 +80,7 @@ export default async function AdminLayout({
     navItems.push(
       { label: 'Finances & Reports', href: '/admin/finances', icon: BarChart3 },
       { label: 'Website Editor', href: '/admin/website-builder', icon: Monitor },
+      { label: 'Business Settings', href: '/admin/settings', icon: Settings },
       { label: 'Admin Accounts', href: '/admin/users', icon: UserCheck },
       { label: 'Audit Log', href: '/admin/audit', icon: ShieldCheck }
     )
