@@ -1,13 +1,13 @@
 import type { MetadataRoute } from 'next'
 import { EDITABLE_PAGES } from '@/utils/pages'
-import { absoluteUrl, loadPublishedServices } from '@/utils/seo'
+import { absoluteUrl, loadCompanyDetails, loadPublishedServices, serviceAreaList } from '@/utils/seo'
 
 // Rebuilt hourly, so new services appear without a redeploy
 export const revalidate = 3600
 
 /** Every public page plus one entry per published service, for search engines to find. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const services = await loadPublishedServices()
+  const [services, company] = await Promise.all([loadPublishedServices(), loadCompanyDetails()])
   const pages: MetadataRoute.Sitemap = Object.values(EDITABLE_PAGES).map((page) => ({
     url: absoluteUrl(page.path),
     changeFrequency: page.path === '/' ? 'weekly' : 'monthly',
@@ -20,6 +20,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...(s.updated_at ? { lastModified: new Date(s.updated_at) } : {}),
       changeFrequency: 'monthly' as const,
       priority: 0.8
-    }))
+    })),
+    { url: absoluteUrl('/service-areas'), changeFrequency: 'monthly' as const, priority: 0.7 },
+    ...serviceAreaList(company)
+      .filter((a) => a.hasPage)
+      .map((a) => ({ url: absoluteUrl(`/service-areas/${a.slug}`), changeFrequency: 'monthly' as const, priority: 0.7 }))
   ]
 }

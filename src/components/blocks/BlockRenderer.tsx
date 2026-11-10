@@ -1,5 +1,6 @@
 'use client'
 
+import { HERO_WIDTHS, responsiveImage } from '@/utils/imageUrl'
 import React from 'react'
 import { useWebsiteBuilder } from '@/context/WebsiteBuilderContext'
 import { isLightColor } from '@/utils/siteTheme'
@@ -67,7 +68,13 @@ export function BlockRenderer({ block }: { block: PageBlock }) {
     >
       {style.bgImage && (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={style.bgImage} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img
+          {...responsiveImage(style.bgImage, HERO_WIDTHS, '100vw')}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
       )}
       {overlay === 'dark' && <div className="absolute inset-0 bg-black/55" />}
       {overlay === 'light' && <div className="absolute inset-0 bg-white/75" />}

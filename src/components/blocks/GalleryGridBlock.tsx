@@ -1,5 +1,6 @@
 'use client'
 
+import { CARD_WIDTHS, responsiveImage } from '@/utils/imageUrl'
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { format } from 'date-fns'
 import { Image as ImageIcon } from 'lucide-react'
@@ -25,7 +26,13 @@ function Photo({ src, label, highlight, onOpen }: { src?: string; label: string;
         {src ? (
           <button type="button" onClick={onOpen} className="w-full h-full cursor-zoom-in" aria-label={`View ${label.toLowerCase()} photo full size`}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt={label} className="w-full h-full object-cover" />
+            <img
+              {...responsiveImage(src, CARD_WIDTHS, '(min-width: 768px) 25vw, 50vw')}
+              alt={label}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover"
+            />
           </button>
         ) : (
           <div className="text-slate-300 flex flex-col items-center space-y-1">

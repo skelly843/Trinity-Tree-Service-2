@@ -7,6 +7,11 @@ import ServiceAreaMap, { type ServiceRadius } from '@/components/ServiceAreaMapL
 
 const SOCIAL_FIELDS: { key: string; label: string; placeholder: string }[] = [
   { key: 'google', label: 'Google Business Profile', placeholder: 'https://g.page/… or https://maps.app.goo.gl/…' },
+  {
+    key: 'google_review',
+    label: 'Google review link (where customers write a review)',
+    placeholder: 'https://g.page/r/…/review (Business Profile > Ask for reviews)'
+  },
   { key: 'facebook', label: 'Facebook', placeholder: 'https://facebook.com/…' },
   { key: 'instagram', label: 'Instagram', placeholder: 'https://instagram.com/…' },
   { key: 'yelp', label: 'Yelp', placeholder: 'https://yelp.com/biz/…' },
@@ -41,6 +46,9 @@ export default function AdminSettingsPage() {
   const [placeError, setPlaceError] = useState<string | null>(null)
   const [finding, setFinding] = useState(false)
   const [seasonalText, setSeasonalText] = useState('')
+  // A short description per city; a city with one gets its own page
+  const [areaPages, setAreaPages] = useState<Record<string, string>>({})
+  const [hasAreaPages, setHasAreaPages] = useState(false)
 
   useEffect(() => {
     async function loadSettings() {
@@ -66,6 +74,8 @@ export default function AdminSettingsPage() {
           setPlaceQuery(data.service_radius.label || '')
         }
         setSeasonalText((data.seasonal_areas || []).join(', '))
+        setHasAreaPages('area_pages' in data)
+        setAreaPages(data.area_pages && typeof data.area_pages === 'object' ? data.area_pages : {})
       }
       setFetching(false)
     }
@@ -93,6 +103,8 @@ export default function AdminSettingsPage() {
     }
   }
 
+  const cityList = areasText.split(/[,\n]/).map((a) => a.trim()).filter(Boolean)
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -112,6 +124,14 @@ export default function AdminSettingsPage() {
       service_radius: radius ? { ...radius, miles: Math.round(radius.miles), label: placeQuery.trim() || radius.label || '' } : null,
       seasonal_areas: seasonalAreas,
       social_links: socialLinks,
+      // Only sent once the database has the column (migration 019), so saving keeps working before it
+      ...(hasAreaPages || Object.values(areaPages).some((t) => t.trim())
+        ? {
+            area_pages: Object.fromEntries(
+              serviceAreas.map((city) => [city, (areaPages[city] || '').trim().slice(0, 3000)]).filter(([, text]) => text)
+            )
+          }
+        : {}),
       updated_at: new Date().toISOString()
     })
     if (saveErr) {
@@ -259,6 +279,34 @@ export default function AdminSettingsPage() {
               Dallas, Houston and Waco&quot;). Search engines match searches by city name, so list the cities people search from.
             </span>
           </label>
+
+          {cityList.length > 0 && (
+            <details className="rounded-xl border border-slate-200 p-4">
+              <summary className="cursor-pointer text-sm font-bold text-slate-800">City pages (optional, helps you show up in each city&apos;s searches)</summary>
+              <p className="text-xs text-slate-500 mt-2">
+                Write a few sentences about your work in a city (neighborhoods you serve, common trees, storm work you&apos;ve done there, how fast you can get there). A
+                city with at least 120 characters gets its own page at /service-areas. Leave it blank to just list the city. Write each one differently; copied text
+                hurts rankings.
+              </p>
+              <div className="mt-3 space-y-3">
+                {cityList.map((city) => (
+                    <label key={city} className="block space-y-1">
+                      <span className="text-xs font-bold text-slate-600">
+                        {city} {(areaPages[city] || '').trim().length >= 120 ? '· has its own page' : ''}
+                      </span>
+                      <textarea
+                        value={areaPages[city] || ''}
+                        onChange={(e) => setAreaPages({ ...areaPages, [city]: e.target.value })}
+                        rows={3}
+                        maxLength={3000}
+                        className={input}
+                        placeholder={`What should someone in ${city} know about your work there?`}
+                      />
+                    </label>
+                  ))}
+              </div>
+            </details>
+          )}
 
           <label className="space-y-1.5 block">
             <span className={label}>Seasonal or storm response areas (optional)</span>

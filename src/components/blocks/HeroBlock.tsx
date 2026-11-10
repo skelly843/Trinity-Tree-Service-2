@@ -1,5 +1,6 @@
 'use client'
 
+import { HERO_WIDTHS, responsiveImage } from '@/utils/imageUrl'
 import React, { useState } from 'react'
 import { ArrowRight, ImagePlus, Maximize2, Minimize2, X } from 'lucide-react'
 import { InlineText } from '@/components/admin/InlineText'
@@ -24,7 +25,12 @@ export default function HeroBlock({ data, editable, update }: BlockProps) {
       {data.backgroundImage && (
         <div className="absolute inset-0 z-0">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={data.backgroundImage} alt="" className="w-full h-full object-cover brightness-[0.45]" />
+          <img
+            {...responsiveImage(data.backgroundImage, HERO_WIDTHS, '100vw')}
+            alt=""
+            fetchPriority="high"
+            className="w-full h-full object-cover brightness-[0.45]"
+          />
         </div>
       )}
 

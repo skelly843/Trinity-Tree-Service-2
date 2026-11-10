@@ -9,7 +9,9 @@ import { WebsiteBuilderProvider } from '@/context/WebsiteBuilderContext'
 import { VisualEditorToolbar } from '@/components/admin/VisualEditorToolbar'
 import GlobalEditorButton from '@/components/admin/GlobalEditorButton'
 import { loadSiteBrand } from '@/utils/supabase/loadSiteBrand'
-import { siteUrl } from '@/utils/seo'
+import { loadCompanyDetails, siteUrl } from '@/utils/seo'
+import Analytics from '@/components/Analytics'
+import CallButton from '@/components/CallButton'
 
 // Geist is only used when picked in Brand & Theme (and for code-style text), so it is not
 // preloaded: a preload holds back the first paint of every page.
@@ -45,7 +47,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   // No cookies here, so public pages stay cacheable. Who is signed in is checked in the browser.
-  const brand = await loadSiteBrand()
+  const [brand, company] = await Promise.all([loadSiteBrand(), loadCompanyDetails()])
 
   return (
     <html
@@ -59,6 +61,8 @@ export default async function RootLayout({
           <Header />
           <div className="flex-1 flex flex-col">{children}</div>
           <AssistantWidget />
+          <CallButton phone={company?.phone || ''} />
+          <Analytics />
           <Footer />
           <GlobalEditorButton />
         </WebsiteBuilderProvider>

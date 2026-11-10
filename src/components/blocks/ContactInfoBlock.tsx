@@ -74,10 +74,18 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <InfoCard icon={<Phone size={18} />} label="Phone Number">
-            <p className="text-blue-600 font-bold">{settings.phone}</p>
+            {settings.phone ? (
+              <a href={`tel:${String(settings.phone).replace(/[^d+]/g, '')}`} className="text-blue-600 font-bold hover:underline">
+                {settings.phone}
+              </a>
+            ) : null}
           </InfoCard>
           <InfoCard icon={<Mail size={18} />} label="Email Address">
-            <p className="text-blue-600 font-bold">{settings.email}</p>
+            {settings.email ? (
+              <a href={`mailto:${settings.email}`} className="text-blue-600 font-bold hover:underline break-all">
+                {settings.email}
+              </a>
+            ) : null}
           </InfoCard>
           <InfoCard icon={<MapPin size={18} />} label="Business Address">
             <p className="font-semibold text-slate-600">{settings.address}</p>
@@ -129,6 +137,23 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
                 ))}
               </div>
             </div>
+          )}
+
+          {settings.social_links?.google_review && (
+            <a
+              href={settings.social_links.google_review}
+              target="_blank"
+              rel="noreferrer"
+              className="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex items-center gap-4 text-amber-900 hover:shadow-sm"
+            >
+              <span className="text-2xl" aria-hidden>
+                ★
+              </span>
+              <span>
+                <span className="block font-bold text-sm">Worked with us? Leave a Google review</span>
+                <span className="block text-xs">It takes a minute and helps others find us.</span>
+              </span>
+            </a>
           )}
 
           {settings.emergency_service_notice && (

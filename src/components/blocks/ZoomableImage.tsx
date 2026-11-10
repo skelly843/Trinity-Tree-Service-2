@@ -1,5 +1,6 @@
 'use client'
 
+import { CARD_WIDTHS, responsiveImage } from '@/utils/imageUrl'
 import { useCallback, useState } from 'react'
 import { PhotoLightbox } from './PhotoLightbox'
 
@@ -17,7 +18,7 @@ export function ZoomableImage({ src, alt = '', className = 'w-full h-full object
         aria-label={alt ? `View full size: ${alt}` : 'View photo full size'}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} className={className} />
+        <img {...responsiveImage(src, CARD_WIDTHS, '(min-width: 768px) 50vw, 100vw')} alt={alt} loading="lazy" decoding="async" className={className} />
       </button>
       {open && <PhotoLightbox photos={[{ src, caption: alt }]} startIndex={0} onClose={close} />}
     </>

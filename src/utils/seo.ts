@@ -33,6 +33,8 @@ export interface CompanyDetails {
   service_radius: { lat: number; lng: number; miles: number; label?: string } | null
   /** Regions served part of the year, such as storm response */
   seasonal_areas: string[]
+  /** City name -> the owner's description; a city with one gets its own page */
+  area_pages: Record<string, string>
 }
 
 /** Business details from Admin > Settings, read without cookies so pages stay cacheable. */
@@ -58,7 +60,8 @@ export const loadCompanyDetails = cache(async (): Promise<CompanyDetails | null>
         data.service_radius && typeof data.service_radius.lat === 'number' && typeof data.service_radius.miles === 'number'
           ? data.service_radius
           : null,
-      seasonal_areas: Array.isArray(data.seasonal_areas) ? data.seasonal_areas.filter(Boolean) : []
+      seasonal_areas: Array.isArray(data.seasonal_areas) ? data.seasonal_areas.filter(Boolean) : [],
+      area_pages: data.area_pages && typeof data.area_pages === 'object' ? data.area_pages : {}
     }
   } catch {
     return null
@@ -154,7 +157,10 @@ export async function businessJsonLd() {
       : []),
     ...(company?.seasonal_areas || []).map((area) => ({ '@type': 'AdministrativeArea', name: area }))
   ]
-  const sameAs = Object.values(company?.social_links || {}).filter((v) => typeof v === 'string' && /^https?:\/\//.test(v))
+  // Profile links (not the review link) tell search engines these listings are the same business
+  const sameAs = Object.entries(company?.social_links || {})
+    .filter(([key, v]) => key !== 'google_review' && typeof v === 'string' && /^https?:\/\//.test(v))
+    .map(([, v]) => v)
 
   const data: Record<string, unknown> = {
     '@context': 'https://schema.org',
@@ -185,4 +191,22 @@ export async function businessJsonLd() {
   }
   // Escape "<" so text from the database can never close the script tag
   return JSON.stringify(data).replace(/</g, '\\u003c')
+}
+
+/** "College Station" -> "college-station" */
+export function citySlug(city: string) {
+  return city
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
+
+const MIN_AREA_TEXT = 120
+
+/** Main cities, each with its page link when the owner wrote enough about it. */
+export function serviceAreaList(company: CompanyDetails | null) {
+  return (company?.service_areas || []).map((city) => {
+    const text = (company?.area_pages?.[city] || '').trim()
+    return { city, slug: citySlug(city), text, hasPage: text.length >= MIN_AREA_TEXT }
+  })
 }
