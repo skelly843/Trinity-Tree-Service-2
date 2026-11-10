@@ -2,7 +2,8 @@
 
 import { Fragment, useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
-import { FileCheck, Plus, CheckCircle2, AlertCircle, Loader2, ArrowRight, Trash2, ChevronDown, ChevronRight, Send, Pencil, X, Check } from 'lucide-react'
+import { FileCheck, Plus, CheckCircle2, AlertCircle, Loader2, ArrowRight, Trash2, ChevronDown, ChevronRight, Send, Pencil, X, Check, Sparkles } from 'lucide-react'
+import { EstimateHelper } from '@/components/admin/EstimateHelper'
 
 type LineItem = { description: string; quantity: string; unitPrice: string }
 
@@ -34,6 +35,8 @@ export default function AdminEstimatesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({ customerId: '', terms: '' })
   const [items, setItems] = useState<LineItem[]>([blankItem()])
+  const [helperOpen, setHelperOpen] = useState(false)
+  const [isOffice, setIsOffice] = useState(false)
 
   const formTotal = items.reduce((sum, item) => sum + lineTotal(item), 0)
 
@@ -56,7 +59,30 @@ export default function AdminEstimatesPage() {
       }))
     )
     setCustomers(custs || [])
+    const {
+      data: { user }
+    } = await supabase.auth.getUser()
+    const { data: me } = await supabase.from('profiles').select('role').eq('id', user?.id || '').maybeSingle()
+    setIsOffice(me?.role === 'global_admin' || me?.role === 'admin')
     setLoading(false)
+  }
+
+  /** Puts the helper's draft lines into the estimate form (a new one if none is open). */
+  const applyHelperProposal = (lines: { description: string; quantity: number; unit_price: number }[], terms: string) => {
+    setItems(lines.map((l) => ({ description: l.description, quantity: String(l.quantity), unitPrice: String(l.unit_price) })))
+    if (showModal) {
+      setFormData((prev) => ({ ...prev, terms: terms || prev.terms }))
+    } else {
+      setEditingId(null)
+      setFormData({ customerId: '', terms })
+      setShowModal(true)
+    }
+    setSuccess('The helper\x27s lines are in the form. Check them, choose the customer, then save or send.')
+  }
+
+  const customerName = (id: string) => {
+    const c = customers.find((x) => x.id === id)
+    return c ? `${c.first_name} ${c.last_name}` : ''
   }
 
   useEffect(() => {
@@ -224,6 +250,16 @@ export default function AdminEstimatesPage() {
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Contract Estimating & Proposals</h1>
           <p className="text-slate-500 mt-1">List each item of work and its price. Customers approve the items they want, and approved work converts to a job.</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+        {isOffice && (
+          <button
+            type="button"
+            onClick={() => setHelperOpen(true)}
+            className="border border-slate-200 bg-white hover:bg-slate-50 text-slate-800 font-bold px-4 py-2.5 rounded-xl text-sm flex items-center gap-1.5"
+          >
+            <Sparkles size={16} className="text-amber-500" /> Estimate helper
+          </button>
+        )}
         <button
           onClick={handleOpenNew}
           className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center space-x-1.5 shadow-md shadow-blue-100"
@@ -231,6 +267,7 @@ export default function AdminEstimatesPage() {
           <Plus size={16} />
           <span>New Proposal Estimate</span>
         </button>
+        </div>
       </div>
 
       {success && (
@@ -550,6 +587,12 @@ export default function AdminEstimatesPage() {
           </div>
         </div>
       )}
+      <EstimateHelper
+        open={helperOpen}
+        onClose={() => setHelperOpen(false)}
+        draft={showModal ? { customerName: customerName(formData.customerId), items, terms: formData.terms } : null}
+        onUseProposal={applyHelperProposal}
+      />
     </div>
   )
 }
