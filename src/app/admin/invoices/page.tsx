@@ -260,7 +260,7 @@ export default function AdminInvoicesPage() {
                   onChange={(e) => setFormData({ ...formData, jobId: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
                 >
-                  <option value="">-- Choose Contracting Job --</option>
+                  <option value="">-- Choose Job --</option>
                   {jobs.map((j) => (
                     <option key={j.id} value={j.id}>{j.title}</option>
                   ))}

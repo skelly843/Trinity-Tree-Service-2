@@ -42,7 +42,7 @@ export default function CustomerPhotosPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Project Photos</h1>
-          <p className="text-slate-500 mt-1">Private visual updates showing pipe repairs, remodeling framing, and finished surfaces on your properties.</p>
+          <p className="text-slate-500 mt-1">Before, during and after photos of the tree work on your properties.</p>
         </div>
 
         {loading ? (
@@ -84,7 +84,7 @@ export default function CustomerPhotosPage() {
             ))}
             {photos.length === 0 && (
               <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200">
-                <p className="text-slate-400 italic">No project photos uploaded for your properties yet. Check back during active construction dispatches!</p>
+                <p className="text-slate-400 italic">No project photos uploaded for your properties yet. Check back while work is underway.</p>
               </div>
             )}
           </div>

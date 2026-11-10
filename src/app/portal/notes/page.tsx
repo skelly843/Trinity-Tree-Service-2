@@ -102,7 +102,7 @@ export default function CustomerNotesMessagesPage() {
               <MessageSquare className="mr-2 text-blue-600" size={28} />
               Portal Messaging Center
             </h1>
-            <p className="text-slate-500 mt-1">Chat securely with our dispatch managers, request appointment shifts, or submit notes.</p>
+            <p className="text-slate-500 mt-1">Message our office about your job, ask to change a visit, or send a note.</p>
           </div>
 
           {loading ? (

@@ -115,7 +115,7 @@ export default function CustomerPropertiesPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Property Locations</h1>
-          <p className="text-slate-500 mt-1">Manage secondary rental properties, business headquarters, or alternative dispatch points.</p>
+          <p className="text-slate-500 mt-1">The addresses where you want tree work done. Add gate codes or access notes for the crew.</p>
         </div>
 
         {success && (
@@ -160,7 +160,7 @@ export default function CustomerPropertiesPage() {
             ))}
             {properties.length === 0 && (
               <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200">
-                <p className="text-slate-400 italic">No registered dispatch properties found. Add your primary residence address to request services.</p>
+                <p className="text-slate-400 italic">No properties yet. Add your primary residence address to request services.</p>
               </div>
             )}
           </div>
@@ -211,7 +211,7 @@ export default function CustomerPropertiesPage() {
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="Ocean City"
+                    placeholder="Waco"
                     required
                   />
                 </div>
@@ -235,7 +235,7 @@ export default function CustomerPropertiesPage() {
                   value={formData.zipCode}
                   onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="90210"
+                  placeholder="76701"
                   required
                 />
               </div>

@@ -245,7 +245,7 @@ export default function AdminReceiptsPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="e.g. Copper pipes, compression valves, t-joints"
+                  placeholder="e.g. Stump grinder rental, dump fees"
                   required
                 />
               </div>

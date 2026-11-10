@@ -51,7 +51,7 @@ export default function CustomerAppointmentsPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Appointments</h1>
-          <p className="text-slate-500 mt-1">Review your upcoming dispatches, maintenance visits, or completed jobs.</p>
+          <p className="text-slate-500 mt-1">Your upcoming visits and past tree work.</p>
         </div>
 
         {loading ? (
@@ -86,7 +86,7 @@ export default function CustomerAppointmentsPage() {
                       )}
                       {apt.notes && (
                         <p className="text-xs text-slate-600 italic bg-slate-50 p-2.5 rounded-lg mt-2 inline-block">
-                          Note from tech: {apt.notes}
+                          Note from your arborist: {apt.notes}
                         </p>
                       )}
                     </div>
@@ -105,7 +105,7 @@ export default function CustomerAppointmentsPage() {
               ))}
               {appointments.length === 0 && (
                 <div className="text-center py-12 text-slate-400 italic">
-                  No appointments scheduled. Click "Request New Service" to schedule a dispatch.
+                  No appointments scheduled. Use "Request Service" to ask for a visit.
                 </div>
               )}
             </div>

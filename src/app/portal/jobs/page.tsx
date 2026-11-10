@@ -42,7 +42,7 @@ export default function CustomerJobsPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Jobs & Projects</h1>
-          <p className="text-slate-500 mt-1">Review active contracting projects, bathroom designs, or plumbing repairs on your properties.</p>
+          <p className="text-slate-500 mt-1">Tree work in progress and finished on your properties.</p>
         </div>
 
         {loading ? (
@@ -70,7 +70,7 @@ export default function CustomerJobsPage() {
                   </div>
 
                   <p className="text-sm text-slate-600 font-medium">
-                    {job.customer_visible_summary || job.description || 'Our technicians are drafting active progress notes for this project.'}
+                    {job.customer_visible_summary || job.description || 'Your arborist will add progress notes here.'}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400">
@@ -87,7 +87,7 @@ export default function CustomerJobsPage() {
               ))}
               {jobs.length === 0 && (
                 <div className="text-center py-12 text-slate-400 italic">
-                  No active contracting jobs found. Please contact administration if you initiated a project.
+                  No jobs yet. Contact the office if you're expecting one.
                 </div>
               )}
             </div>

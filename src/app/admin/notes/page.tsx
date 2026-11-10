@@ -98,7 +98,7 @@ export default function AdminNotesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">CRM Notes</h1>
-          <p className="text-slate-500 mt-1">Post private internal notes for tech dispatchers, or customer portal visible progress summaries.</p>
+          <p className="text-slate-500 mt-1">Post private notes for the crew, or progress updates the customer sees in their portal.</p>
         </div>
         <button
           onClick={handleOpenNew}
@@ -209,7 +209,7 @@ export default function AdminNotesPage() {
                   onChange={(e) => setFormData({ ...formData, visibility: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
                 >
-                  <option value="internal">Internal (Staff & Technicians only)</option>
+                  <option value="internal">Internal (staff and crew only)</option>
                   <option value="customer_visible">Customer Visible (Shown in Customer Portal)</option>
                 </select>
               </div>

@@ -175,7 +175,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
               <div className="grid grid-cols-3 gap-6">
                 <div className="col-span-2 space-y-2">
                   <label htmlFor="rq-city" className={labelClass}>City</label>
-                  <input id="rq-city" type="text" {...field('city')} className={inputClass} placeholder="Ocean City" required />
+                  <input id="rq-city" type="text" {...field('city')} className={inputClass} placeholder="Waco" required />
                 </div>
                 <div className="space-y-2">
                   <label htmlFor="rq-state" className={labelClass}>State</label>
@@ -184,7 +184,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
               </div>
               <div className="w-1/2 space-y-2">
                 <label htmlFor="rq-zip" className={labelClass}>ZIP Code</label>
-                <input id="rq-zip" type="text" {...field('zipCode')} className={inputClass} placeholder="90210" required />
+                <input id="rq-zip" type="text" {...field('zipCode')} className={inputClass} placeholder="76701" required />
               </div>
             </div>
 
@@ -200,10 +200,13 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
                       {svc.title}
                     </option>
                   ))}
-                  <option value="General Plumbing Repair">General Plumbing Repair</option>
-                  <option value="Sewer/Drain Cleaning">Sewer/Drain Cleaning</option>
-                  <option value="Water Filtration Upgrade">Water Filtration Upgrade</option>
-                  <option value="Home Tiling/Contracting">Home Tiling/Contracting</option>
+                  {/* Used only until services are added in the Services Manager */}
+                  {services.length === 0 &&
+                    ['Tree Removal', 'Tree Trimming & Pruning', 'Stump Grinding', 'Storm Damage Cleanup', 'Land Clearing'].map((name) => (
+                      <option key={name} value={name}>
+                        {name}
+                      </option>
+                    ))}
                   <option value="Other / Custom Request">Other / Custom Request</option>
                 </select>
               </div>
@@ -214,7 +217,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
                   id="rq-problem"
                   {...field('problemDescription')}
                   className={`${inputClass} h-28`}
-                  placeholder="Please describe leaks, water backup, heater issues, or remodel ideas..."
+                  placeholder="Tell us about the trees: what kind, about how tall, where they are, any damage, and how to get into the yard..."
                   required
                 />
               </div>
@@ -249,10 +252,10 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
                 <div>
                   <label htmlFor="isEmergency" className="text-sm font-bold text-red-900 cursor-pointer flex items-center">
                     <ShieldAlert size={16} className="mr-1.5 shrink-0" />
-                    This is an Emergency Plumbing Request
+                    This is an Emergency Tree Service Request
                   </label>
                   <p className="text-red-700 text-xs mt-1">
-                    Select this if you have active flooding, failure of drinking water, or major sewer backup.
+                    Select this if a tree has fallen on a home, vehicle or power line, is blocking a road or driveway, or could fall at any moment.
                   </p>
                 </div>
               </div>
@@ -266,7 +269,7 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
                   className="w-5 h-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="permissionToContact" className="text-xs font-bold text-slate-700 cursor-pointer">
-                  I agree to receive automated messages or phone confirmation for this service dispatch request.
+                  I agree to receive automated messages or phone confirmation for this service request.
                 </label>
               </div>
             </div>

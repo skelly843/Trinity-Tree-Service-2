@@ -203,7 +203,7 @@ export default function GalleryForm({ initialData }: GalleryFormProps) {
                   value={formData.location}
                   onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:outline-none"
-                  placeholder="e.g. Beverly Hills, CA"
+                  placeholder="e.g. Waco, TX"
                 />
               </div>
             </div>
