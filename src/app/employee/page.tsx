@@ -1,153 +1,159 @@
-import { createClient } from '@/utils/supabase/server'
-import { format } from 'date-fns'
-import { Users, Calendar as CalendarIcon, CheckSquare, DollarSign, FileCheck } from 'lucide-react'
 import Link from 'next/link'
-import { Database } from '@/types/database.types'
+import { format, isToday, isTomorrow } from 'date-fns'
+import { ArrowRight, Briefcase, CalendarDays, MapPin, Phone, Wallet } from 'lucide-react'
+import { createClient } from '@/utils/supabase/server'
+import { JobStatusButtons } from '@/components/employee/JobStatusButtons'
+import { money } from '@/utils/finance'
+import { payTotals, type Earning, type Payout } from '@/utils/workerPay'
 
-type AppointmentWithProfile = Database['public']['Tables']['appointments']['Row'] & {
-  profiles: { full_name: string | null } | null
+const OPEN_JOB = ['approved', 'scheduled', 'in_progress', 'waiting_on_parts', 'waiting_on_customer', 'inspection_scheduled']
+
+function dayLabel(d: Date) {
+  if (isToday(d)) return 'Today'
+  if (isTomorrow(d)) return 'Tomorrow'
+  return format(d, 'EEE, MMM d')
 }
 
-export default async function EmployeeOverview() {
+/** An employee's day: their visits, their open jobs, and what they're owed. */
+export default async function EmployeeToday() {
   const supabase = await createClient()
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+  const { data: me } = await supabase.from('profiles').select('full_name').eq('id', user!.id).maybeSingle()
 
-  const { data: upcomingJobs } = await supabase
-    .from('appointments')
-    .select('*, profiles(full_name)')
-    .neq('status', 'completed')
-    .neq('status', 'cancelled')
-    .order('scheduled_at', { ascending: true })
-    .limit(5)
+  const now = new Date()
+  const weekAhead = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
+  const startOfToday = new Date(now)
+  startOfToday.setHours(0, 0, 0, 0)
 
-  const { count: customerCount } = await supabase
-    .from('profiles')
-    .select('*', { count: 'exact', head: true })
-    .eq('role', 'customer')
+  // The database only returns visits and jobs for this worker's customers or assignments
+  const [visitsRes, jobsRes, earningsRes, payoutsRes] = await Promise.all([
+    supabase
+      .from('appointments')
+      .select('id, scheduled_at, service_type, status, notes, customers(first_name, last_name, phone), customer_properties(address_line, city)')
+      .gte('scheduled_at', startOfToday.toISOString())
+      .lte('scheduled_at', weekAhead.toISOString())
+      .not('status', 'in', '(completed,cancelled,no_show)')
+      .order('scheduled_at', { ascending: true }),
+    supabase
+      .from('jobs')
+      .select('id, job_number, title, status, start_date, customers(first_name, last_name, phone), customer_properties(address_line, city)')
+      .in('status', OPEN_JOB)
+      .order('start_date', { ascending: true, nullsFirst: false }),
+    supabase.from('worker_earnings').select('*').eq('worker_id', user!.id).neq('status', 'void'),
+    supabase.from('worker_payouts').select('*').eq('worker_id', user!.id)
+  ])
 
-  const { count: pendingInvoices } = await supabase
-    .from('invoices')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'unpaid')
-
-  const typedJobs = (upcomingJobs as unknown as AppointmentWithProfile[]) || []
+  const visits: any[] = visitsRes.data || []
+  const jobs: any[] = jobsRes.data || []
+  const totals = payTotals((earningsRes.data as Earning[]) || [], (payoutsRes.data as Payout[]) || [])
+  const firstName = (me?.full_name || '').split(' ')[0]
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-500">Overview of business operations.</p>
-        </div>
-        <Link
-          href="/admin/estimates"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm flex items-center gap-1.5"
-        >
-          <FileCheck size={16} />
-          Estimates
-        </Link>
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{firstName ? `Hi, ${firstName}` : 'Today'}</h1>
+        <p className="text-slate-500 mt-1">{format(now, 'EEEE, MMMM d')}</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
-              <CalendarIcon size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Today's Jobs</p>
-              <p className="text-2xl font-bold">{typedJobs.length}</p>
-            </div>
-          </div>
-        </div>
+      <Link href="/employee/pay" className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300">
+        <span className="p-2.5 rounded-xl bg-green-50 text-green-700">
+          <Wallet size={22} />
+        </span>
+        <span className="flex-1 min-w-0">
+          <span className="block font-bold text-slate-900">{money(totals.owedTotal)} owed to you</span>
+          <span className="block text-sm text-slate-500">
+            {totals.upcomingTotal > 0 ? `${money(totals.upcomingTotal)} more when current jobs are finished` : 'See your pay and payments'}
+          </span>
+        </span>
+        <ArrowRight size={18} className="text-slate-400" />
+      </Link>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-purple-100 text-purple-600 rounded-lg">
-              <Users size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Customers</p>
-              <p className="text-2xl font-bold">{customerCount || 0}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-yellow-100 text-yellow-600 rounded-lg">
-              <DollarSign size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Unpaid</p>
-              <p className="text-2xl font-bold">{pendingInvoices || 0}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-          <div className="flex items-center space-x-4">
-            <div className="p-3 bg-green-100 text-green-600 rounded-lg">
-              <CheckSquare size={24} />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 font-medium">Completed</p>
-              <p className="text-2xl font-bold">Today</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-50 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Upcoming Jobs</h2>
-          <Link href="/employee/calendar" className="text-sm font-medium text-blue-600 hover:underline">
-            View Calendar
-          </Link>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {typedJobs.map((job) => (
-                <tr key={job.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {format(new Date(job.scheduled_at), 'p')}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {job.profiles?.full_name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {job.service_type}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                      {job.status}
+      <section className="space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <CalendarDays size={16} /> Visits this week
+        </h2>
+        {visits.length ? (
+          <ul className="space-y-3">
+            {visits.map((v) => {
+              const when = new Date(v.scheduled_at)
+              const name = v.customers ? `${v.customers.first_name} ${v.customers.last_name}` : 'Customer'
+              const address = v.customer_properties ? [v.customer_properties.address_line, v.customer_properties.city].filter(Boolean).join(', ') : ''
+              return (
+                <li key={v.id} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-blue-700">
+                        {dayLabel(when)} · {format(when, 'h:mm a')}
+                      </p>
+                      <p className="font-bold text-slate-900">{v.service_type}</p>
+                      <p className="text-sm text-slate-600">{name}</p>
+                    </div>
+                    <span className="shrink-0 px-2 py-1 rounded-full text-[11px] font-bold uppercase bg-slate-100 text-slate-600">
+                      {String(v.status).replace('_', ' ')}
                     </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-blue-600 hover:text-blue-900">Edit</button>
-                  </td>
-                </tr>
-              ))}
-              {typedJobs.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                    No jobs scheduled.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {address && (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700"
+                      >
+                        <MapPin size={15} /> {address}
+                      </a>
+                    )}
+                    {v.customers?.phone && (
+                      <a href={`tel:${v.customers.phone}`} className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 text-sm font-semibold text-slate-700">
+                        <Phone size={15} /> Call
+                      </a>
+                    )}
+                  </div>
+                  {v.notes && <p className="text-sm text-slate-600 bg-slate-50 rounded-lg p-2.5">{v.notes}</p>}
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="p-6 bg-white rounded-2xl border border-slate-200 text-center text-slate-400">No visits in the next 7 days.</p>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+          <Briefcase size={16} /> Open jobs
+        </h2>
+        {jobs.length ? (
+          <ul className="space-y-3">
+            {jobs.map((j) => {
+              const address = j.customer_properties ? [j.customer_properties.address_line, j.customer_properties.city].filter(Boolean).join(', ') : ''
+              return (
+                <li key={j.id} className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900">
+                        #{j.job_number} {j.title}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {j.customers ? `${j.customers.first_name} ${j.customers.last_name}` : ''}
+                        {address ? ` · ${address}` : ''}
+                      </p>
+                    </div>
+                    <span className="shrink-0 px-2 py-1 rounded-full text-[11px] font-bold uppercase bg-blue-50 text-blue-700">
+                      {String(j.status).replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <JobStatusButtons jobId={j.id} status={j.status} />
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="p-6 bg-white rounded-2xl border border-slate-200 text-center text-slate-400">No open jobs assigned to you.</p>
+        )}
+      </section>
     </div>
   )
 }
