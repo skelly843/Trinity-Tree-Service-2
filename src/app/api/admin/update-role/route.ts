@@ -1,60 +1,49 @@
 import { createClient } from '@/utils/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { redirect } from 'next/navigation'
+import { NextResponse } from 'next/server'
+
+const ASSIGNABLE_ROLES = ['customer', 'employee', 'admin']
 
 export async function POST(request: Request) {
   const formData = await request.formData()
-  const userId = formData.get('userId') as string
-  const role = formData.get('role') as string
+  const userId = String(formData.get('userId') || '')
+  const role = String(formData.get('role') || '')
 
-  if (!userId || !role) {
-    return new Response('Missing user ID or role', { status: 400 })
+  // 303 so the browser follows with a normal page load instead of re-sending the form
+  const back = (params: Record<string, string>) =>
+    NextResponse.redirect(
+      new URL(`/admin/customers/${encodeURIComponent(userId)}?${new URLSearchParams(params)}`, request.url),
+      303
+    )
+
+  if (!userId || !ASSIGNABLE_ROLES.includes(role)) {
+    return back({ error: 'Choose Customer, Employee or Admin.' })
   }
 
   const supabase = await createClient()
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+  if (!user) return NextResponse.redirect(new URL('/admin/login', request.url), 303)
 
-  // Verify current user is admin
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return new Response('Unauthorized', { status: 401 })
-
-  const { data: currentUserProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  const currentRole = currentUserProfile?.role || 'customer'
-  if (currentRole !== 'admin' && currentRole !== 'global_admin') {
-    return new Response('Forbidden', { status: 403 })
+  const { data: me } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  if (me?.role !== 'global_admin') {
+    return back({ error: 'Only the site owner (global admin) can change roles.' })
   }
 
-  // Prevent removing the last admin / global_admin
-  const { count: adminCount } = await supabase
-    .from('profiles')
-    .select('id', { count: 'exact', head: true })
-    .in('role', ['admin', 'global_admin'])
-
-  if ((role !== 'admin' && role !== 'global_admin') && adminCount === 1) {
-    const { data: targetProfile } = await supabase.from('profiles').select('role').eq('id', userId).single()
-    const targetRole = targetProfile?.role || 'customer'
-    if (targetRole === 'admin' || targetRole === 'global_admin') {
-        return new Response('Cannot remove the last administrative account', { status: 400 })
-    }
+  const { data: target } = await supabase.from('profiles').select('role').eq('id', userId).maybeSingle()
+  if (!target) return back({ error: 'That account no longer exists.' })
+  if (target.role === 'global_admin') {
+    return back({ error: "The site owner's role can't be changed here." })
   }
 
-  const { error } = await supabase
-    .from('profiles')
-    .update({ role })
-    .eq('id', userId)
-
-  if (error) {
+  const { data: updated, error } = await supabase.from('profiles').update({ role }).eq('id', userId).select('id')
+  if (error || !updated?.length) {
     console.error('Error updating role:', error)
-    return new Response('Error updating role', { status: 500 })
+    return back({ error: 'The role was not changed. Please try again.' })
   }
 
   revalidatePath(`/admin/customers/${userId}`)
   revalidatePath('/admin/customers')
-
-  // Return to the customer detail page
-  return redirect(`/admin/customers/${userId}?success=true`)
+  return back({ success: 'true' })
 }
