@@ -36,7 +36,7 @@ function schema(properties: Record<string, unknown> = {}, required: string[] = [
 }
 
 interface ToolDef {
-  tool: Anthropic.Beta.BetaTool
+  tool: Anthropic.Tool
   run: (input: any, ctx: ToolContext) => Promise<unknown>
 }
 

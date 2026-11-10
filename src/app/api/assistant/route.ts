@@ -99,7 +99,7 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => ({}))
-  const history: Anthropic.Beta.BetaMessageParam[] = (Array.isArray(body.messages) ? body.messages : [])
+  const history: Anthropic.MessageParam[] = (Array.isArray(body.messages) ? body.messages : [])
     .filter((m: any) => (m?.role === 'user' || m?.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
     .slice(-MAX_TURNS)
     .map((m: any) => ({ role: m.role, content: String(m.content).slice(0, MAX_CHARS) }))
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
   const ctx = { supabase, userId: user.id, role: profile.role || '', customerId }
   const page = typeof body.path === 'string' ? body.path.slice(0, 120) : ''
   const last = history[history.length - 1]
-  const messages: Anthropic.Beta.BetaMessageParam[] = [
+  const messages: Anthropic.MessageParam[] = [
     ...history.slice(0, -1),
     { role: 'user', content: `${page ? `(I'm on the page ${page}.) ` : ''}${last.content}` }
   ]
@@ -138,12 +138,11 @@ export async function POST(request: Request) {
     const client = new Anthropic()
     let reply = ''
     for (let round = 0; round <= MAX_LOOKUP_ROUNDS; round++) {
-      const message = await client.beta.messages.create({
-        model: 'claude-opus-5-5',
+      // Claude Haiku 5.5: the low-cost model, chosen by the owner. Its thinking is on by
+      // default; low effort keeps it short. Thinking blocks are passed back unchanged below.
+      const message = await client.messages.create({
+        model: 'claude-haiku-5-5',
         max_tokens: 1500,
-        // If a safety check declines the request, the API retries it on its recommended fallback model
-        betas: ['server-side-fallback-2026-07-01'],
-        fallbacks: 'default',
         output_config: { effort: 'low' },
         // The tools, guide and business details are the same on every question, so they're cached
         system: [{ type: 'text', text: systemPrompt(audience, profile.role || '', facts), cache_control: { type: 'ephemeral' } }],
@@ -155,15 +154,15 @@ export async function POST(request: Request) {
         reply = `I can't help with that one.${facts.phone && audience === 'customer' ? ` Please call the office at ${facts.phone}.` : ''}`
         break
       }
-      const lookups = message.content.filter((b): b is Anthropic.Beta.BetaToolUseBlock => b.type === 'tool_use')
+      const lookups = message.content.filter((b): b is Anthropic.ToolUseBlock => b.type === 'tool_use')
       if (message.stop_reason !== 'tool_use' || !lookups.length || round === MAX_LOOKUP_ROUNDS) {
         reply = message.content.map((b) => (b.type === 'text' ? b.text : '')).join('').trim()
         if (!reply && lookups.length) reply = 'That needed more looking up than I can do in one go. Try asking about one thing at a time.'
         break
       }
 
-      messages.push({ role: 'assistant', content: message.content as any })
-      const results: Anthropic.Beta.BetaToolResultBlockParam[] = []
+      messages.push({ role: 'assistant', content: message.content })
+      const results: Anthropic.ToolResultBlockParam[] = []
       for (const call of lookups) {
         const { text, isError } = await runAssistantTool(tools, call.name, call.input, ctx)
         results.push({ type: 'tool_result', tool_use_id: call.id, content: text, ...(isError ? { is_error: true } : {}) })
