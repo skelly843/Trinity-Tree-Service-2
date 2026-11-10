@@ -46,17 +46,17 @@ export default function SiteContentPage() {
     ctaUrl: '/request-service',
     secondaryCtaText: 'View Our Work',
     secondaryCtaUrl: '/gallery',
-    whyChooseTitle: 'Why Choose Aquaman',
+    whyChooseTitle: 'Why Choose Trinity Enterprise',
     whyChooseSubtitle: 'The Preferred Choice for Homeowners'
   })
 
   // 2. About content state
   const [aboutContent, setAboutContent] = useState({
-    heading: 'About Aquaman Plumbing & General Contracting',
-    subtitle: 'Providing high-quality plumbing and contracting services with integrity, reliability, and precision.',
+    heading: 'About Trinity Enterprise Tree Services',
+    subtitle: 'Safe, professional tree care with integrity, reliability, and respect for your property.',
     storyTitle: 'Our Story & Mission',
-    storyBody: 'Founded with a commitment to premium craftsmanship, Aquaman has grown from a local plumbing team into a premier general contracting firm. We specialize in handling complex residential and commercial water systems, high-efficiency upgrades, custom bathroom & kitchen remodeling, and general maintenance.',
-    mission: 'Our mission is to safeguard our clients\' homes and commercial investments by delivering robust plumbing engineering, professional project management, and completely transparent pricing on every job.',
+    storyBody: 'Trinity Enterprise Tree Services provides tree removal, trimming and pruning, stump grinding, land clearing and storm damage cleanup for homes and businesses, from Dallas to Houston and beyond, including hurricane recovery during storm season.',
+    mission: 'Our mission is to safeguard our clients\' homes and commercial investments by delivering careful, professional tree work, clean job sites, and honest, upfront pricing on every job.',
     team: [] as { name: string; role: string; bio: string }[],
   })
 
@@ -64,11 +64,11 @@ export default function SiteContentPage() {
 
   // 3. Contact settings state
   const [contactSettings, setContactSettings] = useState({
-    company_name: 'Aquaman Plumbing & General Contracting',
-    phone: '1-800-555-PLUM',
-    email: 'contact@aquamanservices.com',
-    address: '123 Waterway Ln, Ocean City, CA 90210',
-    emergency_service_notice: 'Our dispatch team is on-call 24/7 for burst pipes, water heater failure & active sewer backups.',
+    company_name: 'Trinity Enterprise Tree Services',
+    phone: '',
+    email: '',
+    address: '',
+    emergency_service_notice: 'Tree down on your home, car or driveway after a storm? Call us and our crew will respond as fast as we can.',
     service_areas: [] as string[],
     business_hours_text: 'Monday - Friday: 7:00 AM - 6:00 PM\nSaturday: 8:00 AM - 4:00 PM\nSunday: Closed'
   })
@@ -81,15 +81,15 @@ export default function SiteContentPage() {
 
   // 5. Footer state
   const [footerSettings, setFooterSettings] = useState({
-    brandName: 'Aquaman Plumbing & Contracting',
-    description: 'Expert plumbing, water heater installations, drain cleaning, and general contracting remodeling.',
-    copyright: '© 2026 Aquaman Services Inc. All rights reserved.'
+    brandName: 'Trinity Enterprise Tree Services',
+    description: 'Tree removal, trimming, stump grinding, land clearing and storm damage cleanup.',
+    copyright: '© 2026 Trinity Enterprise Tree Services. All rights reserved.'
   })
 
   // 6. SEO state
   const [seoSettings, setSeoSettings] = useState({
-    seo_title: 'Aquaman Plumbing & Contracting | Professional Plumbers',
-    seo_description: 'Expert plumbing, drain cleaning, kitchen & bathroom remodeling, and general contracting services.'
+    seo_title: 'Trinity Enterprise Tree Services | Tree Removal & Trimming',
+    seo_description: 'Professional tree removal, trimming, stump grinding, land clearing and storm damage cleanup.'
   })
 
   // 7. Media Library state
@@ -134,10 +134,10 @@ export default function SiteContentPage() {
           .single()
         if (compSettings) {
           setContactSettings({
-            company_name: compSettings.company_name || 'Aquaman Plumbing & General Contracting',
-            phone: compSettings.phone || '1-800-555-PLUM',
-            email: compSettings.email || 'contact@aquamanservices.com',
-            address: compSettings.address || '123 Waterway Ln, Ocean City, CA 90210',
+            company_name: compSettings.company_name || 'Trinity Enterprise Tree Services',
+            phone: compSettings.phone || '',
+            email: compSettings.email || '',
+            address: compSettings.address || '',
             emergency_service_notice: compSettings.emergency_service_notice || '',
             service_areas: compSettings.service_areas || [],
             business_hours_text: compSettings.business_hours_text || 'Monday - Friday: 7:00 AM - 6:00 PM\nSaturday: 8:00 AM - 4:00 PM\nSunday: Closed'
@@ -559,7 +559,7 @@ export default function SiteContentPage() {
                     />
                     <input
                       type="text"
-                      placeholder="Role (e.g. Lead Plumber)"
+                      placeholder="Role (e.g. Lead Arborist)"
                       value={newTeamMember.role}
                       onChange={(e) => setNewTeamMember({ ...newTeamMember, role: e.target.value })}
                       className="px-3 py-2 border bg-white rounded-lg text-sm focus:ring-1"
@@ -687,7 +687,7 @@ export default function SiteContentPage() {
               <div className="flex space-x-2 max-w-xs">
                 <input
                   type="text"
-                  placeholder="Add area (e.g. Malibu)"
+                  placeholder="Add area (e.g. Waco)"
                   value={newArea}
                   onChange={(e) => setNewArea(e.target.value)}
                   className="px-3 py-1.5 text-xs border rounded-lg focus:ring-1 flex-1"
@@ -846,7 +846,7 @@ export default function SiteContentPage() {
                   value={seoSettings.seo_title}
                   onChange={(e) => setSeoSettings({ ...seoSettings, seo_title: e.target.value })}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl"
-                  placeholder="Aquaman Services | Best Plumbers & General Contractors"
+                  placeholder="Trinity Enterprise | Tree Removal & Trimming in Texas"
                 />
               </div>
 
@@ -856,7 +856,7 @@ export default function SiteContentPage() {
                   value={seoSettings.seo_description}
                   onChange={(e) => setSeoSettings({ ...seoSettings, seo_description: e.target.value })}
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-xl h-24 text-sm"
-                  placeholder="Enter a brief, keyword-rich snippet that summary your plumbing and general building services..."
+                  placeholder="Enter a brief, keyword-rich snippet that summary of your tree services..."
                 />
               </div>
             </div>

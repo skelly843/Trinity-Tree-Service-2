@@ -319,7 +319,7 @@ export default function AdminAccountsPage() {
                 className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
               >
                 <option value="admin">Admin (Regional client/job manager)</option>
-                <option value="employee">Employee (Service Technician)</option>
+                <option value="employee">Employee (Arborist / Crew)</option>
                 <option value="global_admin">Global Admin (Full access)</option>
               </select>
             </div>

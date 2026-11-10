@@ -42,7 +42,7 @@ export default function CustomerRequestsPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Service Requests</h1>
-          <p className="text-slate-500 mt-1">Review the status of your online booking requests and dispatch allocations.</p>
+          <p className="text-slate-500 mt-1">The status of the service requests you've sent us.</p>
         </div>
 
         {loading ? (

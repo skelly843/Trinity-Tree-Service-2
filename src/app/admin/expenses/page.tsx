@@ -115,7 +115,7 @@ export default function AdminExpensesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Expenses Ledger</h1>
-          <p className="text-slate-500 mt-1">Record purchases of fixtures, copper tubing, vehicle fuel, or subcontracting costs.</p>
+          <p className="text-slate-500 mt-1">Record purchases of equipment, fuel, chainsaw parts, dump fees, or subcontractor costs.</p>
         </div>
         <button
           onClick={handleOpenNew}
@@ -240,7 +240,7 @@ export default function AdminExpensesPage() {
                   value={formData.vendor}
                   onChange={(e) => setFormData({ ...formData, vendor: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="e.g. Home Depot, Ferguson Plumbing Supply"
+                  placeholder="e.g. Home Depot, local Stihl dealer"
                   required
                 />
               </div>
@@ -278,7 +278,7 @@ export default function AdminExpensesPage() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="e.g. Copper elbows and water filtration cartridge replacements"
+                  placeholder="e.g. Chainsaw chains, bar oil and rigging rope"
                   required
                 />
               </div>

@@ -44,7 +44,7 @@ export default function CustomerReceiptsPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Receipts</h1>
-          <p className="text-slate-500 mt-1">Review part materials, installation receipts, and supplier invoices shared by our contracting crew.</p>
+          <p className="text-slate-500 mt-1">Receipts we've shared with you for your jobs.</p>
         </div>
 
         {loading ? (

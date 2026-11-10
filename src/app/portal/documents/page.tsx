@@ -43,7 +43,7 @@ export default function CustomerDocumentsPage() {
 
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">My Shared Documents</h1>
-          <p className="text-slate-500 mt-1">Download contracts, plumbing specs, architectural guidelines, or official authorizations.</p>
+          <p className="text-slate-500 mt-1">Contracts, estimates, permits and other files we've shared with you.</p>
         </div>
 
         {loading ? (

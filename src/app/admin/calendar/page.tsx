@@ -226,7 +226,7 @@ export default function AdminCalendarPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Scheduling & Dispatch Calendar</h1>
-          <p className="text-slate-500 mt-1">Assign technicians, handle customer booking times, and map tasks.</p>
+          <p className="text-slate-500 mt-1">Assign arborists, handle customer booking times, and plan the crew's day.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export default function AdminCalendarPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-lg w-full overflow-hidden my-8">
             <div className="bg-slate-900 text-white p-6">
               <h2 className="text-xl font-bold">{editingId ? 'Edit Appointment' : 'New Appointment Scheduling'}</h2>
-              <p className="text-xs text-slate-400 mt-1">Configure technicians, dispatch times, and service types.</p>
+              <p className="text-xs text-slate-400 mt-1">Choose the arborist, visit time, and service type.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
@@ -432,7 +432,7 @@ export default function AdminCalendarPage() {
                     value={formData.serviceType}
                     onChange={(e) => setFormData({ ...formData, serviceType: e.target.value })}
                     className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                    placeholder="e.g. Drain Unblocking"
+                    placeholder="e.g. Tree Trimming"
                     required
                   />
                 </div>
@@ -493,7 +493,7 @@ export default function AdminCalendarPage() {
                   value={formData.internalNotes}
                   onChange={(e) => setFormData({ ...formData, internalNotes: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm h-16"
-                  placeholder="Private notes for technicians only..."
+                  placeholder="Private notes for the crew only..."
                 />
               </div>
 

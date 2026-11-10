@@ -9,12 +9,12 @@ import { ManageLink } from './shared'
 import type { BlockProps } from './types'
 
 const DEFAULT_SETTINGS = {
-  phone: '1-800-555-PLUM',
-  email: 'contact@aquamanservices.com',
-  address: '123 Waterway Ln, Ocean City, CA 90210',
+  phone: '',
+  email: '',
+  address: '',
   emergency_service_notice:
-    'Our dispatch team is on-call 24/7 for burst pipes, water heater failure & active sewer backups.',
-  service_areas: ['Ocean City', 'Beverly Hills', 'Malibu', 'Santa Monica'],
+    'Tree down on your home, car or driveway after a storm? Call us and our crew will respond as fast as we can.',
+  service_areas: [] as string[],
   business_hours_text: 'Monday - Friday: 7:00 AM - 6:00 PM\nSaturday: 8:00 AM - 4:00 PM\nSunday: Closed'
 }
 
@@ -137,7 +137,7 @@ export default function ContactInfoBlock({ data, editable, update }: BlockProps)
                 <ShieldAlert size={20} />
               </div>
               <div className="space-y-1">
-                <h3 className="font-bold text-red-900 text-sm">Emergency Dispatch</h3>
+                <h3 className="font-bold text-red-900 text-sm">Storm & Emergency Tree Service</h3>
                 <p className="text-red-700 text-xs leading-relaxed font-semibold">{settings.emergency_service_notice}</p>
               </div>
             </div>

@@ -142,8 +142,8 @@ export default function AdminJobsPage() {
     <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs & Contracting Projects</h1>
-          <p className="text-slate-500 mt-1">Manage bathroom builds, large commercial pipe overhauls, and ongoing maintenance.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Jobs & Projects</h1>
+          <p className="text-slate-500 mt-1">Manage tree removals, trimming, stump grinding, land clearing and storm cleanup.</p>
         </div>
         <button
           onClick={handleOpenNew}
@@ -235,7 +235,7 @@ export default function AdminJobsPage() {
                 {jobs.length === 0 && (
                   <tr>
                     <td colSpan={6} className="px-6 py-12 text-center text-slate-400 italic text-sm">
-                      No active contracting job projects found. Click "New Job Project" to create one.
+                      No jobs found. Click "New Job Project" to create one.
                     </td>
                   </tr>
                 )}
@@ -251,7 +251,7 @@ export default function AdminJobsPage() {
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xl max-w-md w-full overflow-hidden my-8">
             <div className="bg-slate-900 text-white p-6">
               <h2 className="text-xl font-bold">{editingId ? 'Edit Job Project' : 'New Job Project'}</h2>
-              <p className="text-xs text-slate-400 mt-1">Setup contracting parameters, client, priority, and pricing tags.</p>
+              <p className="text-xs text-slate-400 mt-1">Set the customer, arborist, status, priority and price.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -277,7 +277,7 @@ export default function AdminJobsPage() {
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                  placeholder="e.g. Master Bathroom Tiling & Pipe Redirection"
+                  placeholder="e.g. Oak Removal & Stump Grinding"
                   required
                 />
               </div>
