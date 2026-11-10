@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Loader2, Plus, UserPlus, X } from 'lucide-react'
 import { createClient } from '@/utils/supabase/client'
+import { sendPortalInvite } from './CustomerPortalAccess'
 
 const EMPTY = { first_name: '', last_name: '', business_name: '', email: '', phone: '', billing_address: '' }
 
@@ -24,21 +25,31 @@ export function AddCustomerForm() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState<string | null>(null)
+  const [invite, setInvite] = useState(true)
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSaving(true)
     setError(null)
     setSaved(null)
-    const { error: insertError } = await createClient()
+    const { data: created, error: insertError } = await createClient()
       .from('customers')
       .insert([{ ...form, email: form.email.trim().toLowerCase() }])
-    setSaving(false)
-    if (insertError) {
-      setError(insertError.message)
+      .select('id')
+      .single()
+    if (insertError || !created) {
+      setSaving(false)
+      setError(insertError?.message || 'The customer was not saved.')
       return
     }
-    setSaved(`${form.first_name} ${form.last_name} added. They can now be picked on jobs, estimates and invoices.`)
+    let note = 'They can now be picked on jobs, estimates and invoices.'
+    if (invite) {
+      const result = await sendPortalInvite(created.id)
+      note = result.ok ? `${result.message} They will appear under Customer Portal Access.` : `The invitation was not sent: ${result.message}`
+    }
+    setSaving(false)
+    window.dispatchEvent(new Event('customers-changed'))
+    setSaved(`${form.first_name} ${form.last_name} added. ${note}`)
     setForm(EMPTY)
     setOpen(false)
     router.refresh()
@@ -85,6 +96,10 @@ export function AddCustomerForm() {
           </label>
         ))}
       </div>
+      <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-medium text-slate-700">
+        <input type="checkbox" checked={invite} onChange={(e) => setInvite(e.target.checked)} />
+        Email them an invitation to create a customer portal login
+      </label>
       {error && <p role="alert" className="text-sm font-medium text-red-600">{error}</p>}
       <button
         type="submit"
