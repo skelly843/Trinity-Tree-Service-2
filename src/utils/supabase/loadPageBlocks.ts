@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createPublicClient } from '@/utils/supabase/public'
 import { getDefaultBlocks, type PageId } from '@/utils/pages'
 import { FALLBACK_GALLERY_ITEMS, FALLBACK_SERVICES } from '@/utils/fallbackData'
@@ -14,7 +15,7 @@ type PublicClient = NonNullable<ReturnType<typeof createPublicClient>>
  * `data` holds the services and gallery items the page's blocks list, so they render without a layout shift.
  * Uses the cookie-free client so the page can be cached; the editor refreshes the cache on save.
  */
-export async function loadPageBlocks(
+async function loadPageBlocksUncached(
   pageId: PageId
 ): Promise<{ blocks: PageBlock[]; persisted: boolean; data: PageData }> {
   const supabase = createPublicClient()
@@ -72,3 +73,6 @@ async function loadGallery(supabase: PublicClient | null) {
   }
   return items
 }
+
+/** One load per request, shared by the page and its search-engine metadata. */
+export const loadPageBlocks = cache(loadPageBlocksUncached)
