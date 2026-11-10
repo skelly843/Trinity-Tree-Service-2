@@ -49,6 +49,23 @@ export default function AssistantWidget() {
   const [notice, setNotice] = useState<string | null>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
+  // Keep the conversation while moving between pages in this tab
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem('assistant-chat')
+      if (saved) setChat(JSON.parse(saved))
+    } catch {
+      /* nothing saved */
+    }
+  }, [])
+  useEffect(() => {
+    try {
+      sessionStorage.setItem('assistant-chat', JSON.stringify(chat.slice(-20)))
+    } catch {
+      /* storage blocked */
+    }
+  }, [chat])
+
   const load = useCallback(async () => {
     try {
       const supabase = createClient()
@@ -57,6 +74,7 @@ export default function AssistantWidget() {
       } = await supabase.auth.getUser()
       if (!user) {
         setAudience(null)
+        setChat([])
         return
       }
       const { data: profile } = await supabase.from('profiles').select('role, is_active, created_at').eq('id', user.id).maybeSingle()
@@ -208,15 +226,22 @@ export default function AssistantWidget() {
             <span className="font-bold flex items-center gap-2">
               <GraduationCap size={18} /> Help assistant
             </span>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="p-1 rounded hover:bg-white/10">
-              <X size={18} />
-            </button>
+            <span className="flex items-center gap-1">
+              {chat.length > 0 && (
+                <button type="button" onClick={() => setChat([])} className="px-2 py-1 rounded text-xs font-semibold hover:bg-white/10">
+                  Start over
+                </button>
+              )}
+              <button type="button" onClick={() => setOpen(false)} aria-label="Close" className="p-1 rounded hover:bg-white/10">
+                <X size={18} />
+              </button>
+            </span>
           </header>
 
           <div ref={listRef} className="flex-1 overflow-y-auto p-4 space-y-3 text-sm">
             {chat.length === 0 && (
               <div className="space-y-3">
-                <p className="text-slate-600">Ask me how to do anything on this website. Try:</p>
+                <p className="text-slate-600">Ask me how to do anything on this website, or about your own visits, bills and jobs. Try:</p>
                 <div className="flex flex-col gap-2">
                   {ASSISTANT_STARTERS[audience].map((q) => (
                     <button key={q} type="button" onClick={() => ask(q)} className="text-left px-3 py-2 rounded-xl bg-blue-50 text-blue-800 font-semibold hover:bg-blue-100">
@@ -261,6 +286,7 @@ export default function AssistantWidget() {
           </form>
 
           <footer className="px-3 pb-3 space-y-1">
+            <p className="text-[11px] text-slate-400">Answers come from AI and can be wrong. Check important details on the page itself.</p>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs font-semibold text-slate-500">
               {canTurnOff && (
                 <button
