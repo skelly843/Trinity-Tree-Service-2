@@ -85,7 +85,7 @@ export const ASSISTANT_TIPS: Record<AssistantAudience, string[]> = {
 }
 
 export const ASSISTANT_STARTERS: Record<AssistantAudience, string[]> = {
-  customer: ['How do I approve an estimate?', 'Where do I see what I owe?', 'How do I message the office?'],
-  employee: ['Where is my next job?', 'How do I mark a job done?', 'How do I see what I\'m owed?'],
-  office: ['How do I assign a customer to an arborist?', 'How do I record a Zelle payment to a worker?', 'How do I invite a customer to the portal?']
+  customer: ['When is my next visit?', 'What do I owe right now?', 'How do I approve an estimate?'],
+  employee: ['Where is my next job?', 'How much am I owed?', 'How do I mark a job done?'],
+  office: ['What is on the schedule today?', 'Who owes us money?', 'How do I record a Zelle payment to a worker?']
 }
