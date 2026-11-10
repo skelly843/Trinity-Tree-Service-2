@@ -1,9 +1,56 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, Loader2, Lock, TreeDeciduous } from 'lucide-react'
+
+type LinkState = 'checking' | 'ready' | 'invalid'
+
+/**
+ * Signs the visitor in from the reset link, whichever form it arrives in:
+ * ?token_hash=...&type=recovery (recommended email template), ?code=... (PKCE),
+ * or #access_token=... (older links). Without this the form has no session and
+ * saving fails with "Auth session missing".
+ */
+async function signInFromResetLink(): Promise<string | null> {
+  const supabase = createClient()
+  const query = new URLSearchParams(window.location.search)
+  const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+  const clean = () => window.history.replaceState(null, '', window.location.pathname)
+
+  const linkError = hash.get('error_code') || query.get('error_code') || hash.get('error') || query.get('error')
+  if (linkError) {
+    clean()
+    return linkError === 'otp_expired'
+      ? 'This reset link has expired or was already used.'
+      : hash.get('error_description') || query.get('error_description') || 'This reset link is not valid.'
+  }
+
+  const tokenHash = query.get('token_hash')
+  const code = query.get('code')
+  const accessToken = hash.get('access_token')
+  const refreshToken = hash.get('refresh_token')
+  let failure: string | null = null
+  if (tokenHash) {
+    const { error } = await supabase.auth.verifyOtp({ token_hash: tokenHash, type: 'recovery' })
+    if (error) failure = error.message
+  } else if (code) {
+    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    if (error) failure = error.message
+  } else if (accessToken && refreshToken) {
+    const { error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: refreshToken })
+    if (error) failure = error.message
+  }
+  if (tokenHash || code || accessToken) clean()
+
+  // The browser client may already have signed in from the link on its own
+  const { data } = await supabase.auth.getSession()
+  if (data.session) return null
+  return failure && !/expired|invalid/i.test(failure)
+    ? failure
+    : 'This reset link has expired or was already used. Links work once, and only in the browser where the reset was requested.'
+}
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState('')
@@ -11,6 +58,18 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [linkState, setLinkState] = useState<LinkState>('checking')
+  const [linkError, setLinkError] = useState<string | null>(null)
+
+  useEffect(() => {
+    signInFromResetLink().then((problem) => {
+      setLinkError(problem)
+      setLinkState(problem ? 'invalid' : 'ready')
+    }).catch(() => {
+      setLinkError('We could not check this reset link. Please request a new one.')
+      setLinkState('invalid')
+    })
+  }, [])
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,7 +110,24 @@ export default function ResetPasswordPage() {
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Reset Password</h1>
         <p className="text-slate-500 mt-2 font-medium mb-8">Enter your new secure password below</p>
 
-        {success ? (
+        {linkState === 'checking' ? (
+          <div className="flex items-center justify-center gap-2 text-sm text-slate-500 py-6">
+            <Loader2 className="animate-spin" size={18} /> Checking your reset link...
+          </div>
+        ) : linkState === 'invalid' ? (
+          <div className="space-y-5">
+            <div className="p-3 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm flex items-start space-x-2 text-left">
+              <AlertCircle size={18} className="mt-0.5 flex-shrink-0" />
+              <span>{linkError}</span>
+            </div>
+            <Link
+              href="/forgot-password"
+              className="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-blue-700 transition-all"
+            >
+              Send me a new link
+            </Link>
+          </div>
+        ) : success ? (
           <div className="space-y-6">
             <div className="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 size={24} />
