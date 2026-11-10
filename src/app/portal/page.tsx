@@ -69,6 +69,12 @@ export default async function CustomerDashboard() {
     : [{ data: [] }, { data: [] }, { data: [] }, { data: [] }, { count: 0 }]
 
   const upcoming: any[] = (apptRes as any).data || []
+
+  // Who the customer can expect: their main arborist and whoever is on each visit
+  const { data: team } = customer ? await supabase.rpc('customer_team') : { data: [] }
+  const teamRows: { kind: string; ref_id: string; full_name: string | null; avatar_url: string | null }[] = (team as any) || []
+  const primary = teamRows.find((t) => t.kind === 'primary')
+  const visitStaff = new Map(teamRows.filter((t) => t.kind === 'visit').map((t) => [t.ref_id, t.full_name]))
   const openEstimates: any[] = (estRes as any).data || []
   const openInvoices: any[] = (invRes as any).data || []
   const lastMessage: any = ((msgRes as any).data || [])[0]
@@ -143,6 +149,22 @@ export default async function CustomerDashboard() {
         </div>
       )}
 
+      {primary?.full_name && (
+        <section className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-200 shadow-sm" aria-label="Your arborist">
+          {primary.avatar_url ? (
+            <img src={primary.avatar_url} alt="" className="w-12 h-12 rounded-full object-cover shrink-0" />
+          ) : (
+            <span className="w-12 h-12 rounded-full bg-blue-50 text-blue-700 font-extrabold flex items-center justify-center shrink-0">
+              {primary.full_name.slice(0, 1)}
+            </span>
+          )}
+          <div className="min-w-0">
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Your arborist</p>
+            <p className="font-bold text-slate-900">{primary.full_name}</p>
+          </div>
+        </section>
+      )}
+
       {/* What needs the customer's attention */}
       <section className="space-y-3" aria-labelledby="attention">
         <h2 id="attention" className="text-sm font-bold uppercase tracking-wider text-slate-500">
@@ -185,7 +207,10 @@ export default async function CustomerDashboard() {
               <li key={apt.id} className="px-5 py-4 flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="font-bold text-slate-800 truncate">{apt.service_type}</p>
-                  <p className="text-sm text-slate-500">{format(new Date(apt.scheduled_at), 'EEE, MMM d · h:mm a')}</p>
+                  <p className="text-sm text-slate-500">
+                    {format(new Date(apt.scheduled_at), 'EEE, MMM d · h:mm a')}
+                    {visitStaff.get(apt.id) ? ` · with ${visitStaff.get(apt.id)}` : ''}
+                  </p>
                 </div>
                 <span className="shrink-0 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700">
                   {String(apt.status).replace('_', ' ')}

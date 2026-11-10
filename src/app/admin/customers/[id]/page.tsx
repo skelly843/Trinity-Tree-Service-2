@@ -20,6 +20,7 @@ import {
 } from 'lucide-react'
 import { CustomerNoteComposer } from '@/components/admin/CustomerNoteComposer'
 import { CreateCustomerRecord } from '@/components/admin/CreateCustomerRecord'
+import { AssignArborist } from '@/components/admin/AssignArborist'
 
 const TABS = [
   { id: 'history', label: 'Service History' },
@@ -61,6 +62,7 @@ export default async function CustomerDetailPage({
     ? await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
     : { data: null }
   const viewerIsGlobalAdmin = viewer?.role === 'global_admin'
+  const viewerIsOffice = viewerIsGlobalAdmin || viewer?.role === 'admin'
 
   // Appointments, invoices and messages hang off the customer record (Customers & CRM),
   // which is linked to this login directly or by the same email address.
@@ -74,6 +76,10 @@ export default async function CustomerDetailPage({
     const { data } = await supabase.from('customers').select('*').ilike('email', profile.email).limit(5)
     customer = (data || []).find((c: any) => (c.email || '').toLowerCase() === profile.email!.toLowerCase()) || null
   }
+
+  const { data: staff } = viewerIsOffice
+    ? await supabase.from('profiles').select('id, full_name, email').in('role', ['global_admin', 'admin', 'employee']).order('full_name')
+    : { data: [] as any[] }
 
   const [appointmentsRes, invoicesRes, notesRes] = customer
     ? await Promise.all([
@@ -153,6 +159,12 @@ export default async function CustomerDetailPage({
               </div>
             </div>
           </div>
+
+          {customer && viewerIsOffice && (
+            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+              <AssignArborist customerId={customer.id} currentId={customer.assigned_admin_id} staff={staff || []} />
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 flex items-center">

@@ -9,6 +9,7 @@ export default function CustomerAppointmentsPage() {
   const supabase = createClient()
   const [appointments, setAppointments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [staffByVisit, setStaffByVisit] = useState<Record<string, string>>({})
 
   useEffect(() => {
     async function loadAppointments() {
@@ -29,6 +30,13 @@ export default function CustomerAppointmentsPage() {
             .eq('customer_id', customer.id)
             .order('scheduled_at', { ascending: false })
           setAppointments(data || [])
+          // Names of the arborists on upcoming visits
+          const { data: team } = await supabase.rpc('customer_team')
+          const names: Record<string, string> = {}
+          ;((team as any[]) || []).forEach((t) => {
+            if (t.kind === 'visit' && t.full_name) names[t.ref_id] = t.full_name
+          })
+          setStaffByVisit(names)
         }
       }
       setLoading(false)
@@ -70,6 +78,9 @@ export default function CustomerAppointmentsPage() {
                         <Clock size={12} className="mr-1" />
                         {format(new Date(apt.scheduled_at), 'PPP p')}
                       </p>
+                      {staffByVisit[apt.id] && (
+                        <p className="text-xs font-semibold text-slate-700">Your arborist: {staffByVisit[apt.id]}</p>
+                      )}
                       {apt.customer_properties && (
                         <p className="text-xs text-slate-500">Address: {apt.customer_properties.address_line}</p>
                       )}

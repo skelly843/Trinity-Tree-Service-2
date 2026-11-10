@@ -14,6 +14,7 @@ export default function AdminJobsPage() {
   const [success, setSuccess] = useState<string | null>(null)
 
   // modal editing toggles
+  const [staff, setStaff] = useState<any[]>([])
   const [showModal, setShowModal] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
 
@@ -24,7 +25,8 @@ export default function AdminJobsPage() {
     status: 'lead',
     priority: 'medium',
     totalAmount: '',
-    paymentStatus: 'unpaid'
+    paymentStatus: 'unpaid',
+    assignedAdminId: ''
   })
 
   const loadJobs = async () => {
@@ -38,6 +40,12 @@ export default function AdminJobsPage() {
       .from('customers')
       .select('id, first_name, last_name')
 
+    const { data: staffList } = await supabase
+      .from('profiles')
+      .select('id, full_name, email, role')
+      .in('role', ['global_admin', 'admin', 'employee'])
+      .order('full_name')
+    setStaff(staffList || [])
     setJobs(jobsList || [])
     setCustomers(custs || [])
     setLoading(false)
@@ -56,7 +64,8 @@ export default function AdminJobsPage() {
       status: 'lead',
       priority: 'medium',
       totalAmount: '',
-      paymentStatus: 'unpaid'
+      paymentStatus: 'unpaid',
+      assignedAdminId: ''
     })
     setShowModal(true)
   }
@@ -70,7 +79,8 @@ export default function AdminJobsPage() {
       status: job.status || 'lead',
       priority: job.priority || 'medium',
       totalAmount: job.total_amount ? String(job.total_amount) : '',
-      paymentStatus: job.payment_status || 'unpaid'
+      paymentStatus: job.payment_status || 'unpaid',
+      assignedAdminId: job.assigned_admin_id || ''
     })
     setShowModal(true)
   }
@@ -89,6 +99,7 @@ export default function AdminJobsPage() {
       priority: formData.priority,
       total_amount: formData.totalAmount ? Number(formData.totalAmount) : 0,
       payment_status: formData.paymentStatus,
+      assigned_admin_id: formData.assignedAdminId || null,
       updated_at: new Date().toISOString()
     }
 
@@ -268,6 +279,21 @@ export default function AdminJobsPage() {
                     <option key={c.id} value={c.id}>{c.first_name} {c.last_name}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-600 uppercase tracking-wider">Assigned arborist</label>
+                <select
+                  value={formData.assignedAdminId}
+                  onChange={(e) => setFormData({ ...formData, assignedAdminId: e.target.value })}
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm bg-white"
+                >
+                  <option value="">-- Not assigned yet --</option>
+                  {staff.map((p) => (
+                    <option key={p.id} value={p.id}>{p.full_name || p.email}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500">They see this job, the customer and the address in their employee area, and the customer sees who to expect.</p>
               </div>
 
               <div className="space-y-1.5">
