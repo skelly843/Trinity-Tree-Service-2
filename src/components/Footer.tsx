@@ -44,6 +44,8 @@ export default function Footer() {
           <Link href="/about" className="hover:text-white transition-colors font-medium">About</Link>
           <Link href="/contact" className="hover:text-white transition-colors font-medium">Contact</Link>
           <Link href="/service-areas" className="hover:text-white transition-colors font-medium">Service Areas</Link>
+          <Link href="/privacy" className="hover:text-white transition-colors font-medium">Privacy</Link>
+          <Link href="/terms" className="hover:text-white transition-colors font-medium">Terms</Link>
         </div>
       </div>
       <div className="max-w-7xl mx-auto mt-8 pt-8 border-t border-slate-800 text-center text-sm text-slate-400">

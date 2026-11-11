@@ -1,5 +1,6 @@
 'use client'
 
+import { AgreeToTerms } from '@/components/AgreeToTerms'
 import { trackLead } from '@/utils/tracking'
 import React, { useEffect, useState } from 'react'
 import { AlertCircle, CheckCircle2, Loader2, ShieldAlert } from 'lucide-react'
@@ -25,7 +26,8 @@ const EMPTY_FORM = {
   preferredDate: '',
   preferredTimeWindow: 'any_time',
   isEmergency: false,
-  permissionToContact: true
+  // Texting consent must be given by the customer, so the box starts unchecked
+  permissionToContact: false
 }
 
 export default function RequestFormBlock({ data, editable, update }: BlockProps) {
@@ -271,7 +273,8 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
                   className="w-5 h-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
                 />
                 <label htmlFor="permissionToContact" className="text-xs font-bold text-slate-700 cursor-pointer">
-                  I agree to receive automated messages or phone confirmation for this service request.
+                  I agree to receive calls and text messages about this request, including automated texts. Consent is not required to get
+                  service. Message and data rates may apply. Reply STOP to opt out.
                 </label>
               </div>
             </div>
@@ -279,6 +282,9 @@ export default function RequestFormBlock({ data, editable, update }: BlockProps)
             {/* Status + submit */}
             <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 pt-4">
               <div className="text-xs font-bold">
+                <div className="font-normal mb-1">
+                  <AgreeToTerms action="sending this request" />
+                </div>
                 {success && (
                   <div className="flex items-center text-green-600">
                     <CheckCircle2 size={18} className="mr-1 shrink-0" />

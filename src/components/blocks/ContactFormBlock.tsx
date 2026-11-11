@@ -1,5 +1,6 @@
 'use client'
 
+import { AgreeToTerms } from '@/components/AgreeToTerms'
 import { trackLead } from '@/utils/tracking'
 import React, { useState } from 'react'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
@@ -125,6 +126,9 @@ export default function ContactFormBlock({ data, editable, update }: BlockProps)
 
             <div className="flex flex-col-reverse sm:flex-row sm:items-center justify-between gap-4 pt-2">
               <div className="text-xs">
+                <div className="font-normal mb-1">
+                  <AgreeToTerms action="sending this message" />
+                </div>
                 {success && (
                   <div className="flex items-center text-green-600 font-bold">
                     <CheckCircle2 size={16} className="mr-1 shrink-0" />

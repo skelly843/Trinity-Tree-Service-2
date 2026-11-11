@@ -1,5 +1,6 @@
 'use client'
 
+import { AgreeToTerms } from '@/components/AgreeToTerms'
 import { SiteName } from '@/components/SiteTheme'
 import { useState } from 'react'
 import { createClient } from '@/utils/supabase/client'
@@ -123,6 +124,7 @@ export default function SignupPage() {
             </div>
           )}
 
+          <AgreeToTerms action="creating an account" />
           <button
             type="submit"
             disabled={loading}
