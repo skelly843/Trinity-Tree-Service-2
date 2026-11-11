@@ -4,6 +4,7 @@ import { Fragment, useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { FileCheck, Plus, CheckCircle2, AlertCircle, Loader2, ArrowRight, Trash2, ChevronDown, ChevronRight, Send, Pencil, X, Check, Sparkles } from 'lucide-react'
 import { EstimateHelper } from '@/components/admin/EstimateHelper'
+import { STANDARD_ESTIMATE_TERMS } from '@/utils/estimateTerms'
 
 type LineItem = { description: string; quantity: string; unitPrice: string }
 
@@ -544,12 +545,26 @@ export default function AdminEstimatesPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label htmlFor="estimate-terms" className="text-xs font-bold text-slate-600 uppercase tracking-wider">Terms & Scope</label>
+                <div className="flex items-center justify-between gap-3">
+                  <label htmlFor="estimate-terms" className="text-xs font-bold text-slate-600 uppercase tracking-wider">Terms & Scope</label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData({
+                        ...formData,
+                        terms: formData.terms.includes('This estimate is valid') ? formData.terms : [formData.terms.trim(), STANDARD_ESTIMATE_TERMS].filter(Boolean).join('\n\n')
+                      })
+                    }
+                    className="text-xs font-bold text-blue-600 hover:underline"
+                  >
+                    Add standard terms
+                  </button>
+                </div>
                 <textarea
                   id="estimate-terms"
                   value={formData.terms}
                   onChange={(e) => setFormData({ ...formData, terms: e.target.value })}
-                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm h-20"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm h-32"
                   placeholder="Payment upon completion, valid for 30 days..."
                 />
               </div>

@@ -1,5 +1,6 @@
 'use client'
 
+import { AgreeToTerms } from '@/components/AgreeToTerms'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { AlertCircle, CheckCircle2, KeyRound, Loader2 } from 'lucide-react'
@@ -141,6 +142,7 @@ export default function AcceptInvitePage() {
             {error && (
               <p role="alert" className="text-sm font-medium text-red-600">{error}</p>
             )}
+            <AgreeToTerms action="creating your login" />
             <button
               type="submit"
               disabled={saving}

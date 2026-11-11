@@ -22,6 +22,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8
     })),
     { url: absoluteUrl('/service-areas'), changeFrequency: 'monthly' as const, priority: 0.7 },
+    { url: absoluteUrl('/privacy'), changeFrequency: 'yearly' as const, priority: 0.2 },
+    { url: absoluteUrl('/terms'), changeFrequency: 'yearly' as const, priority: 0.2 },
     ...serviceAreaList(company)
       .filter((a) => a.hasPage)
       .map((a) => ({ url: absoluteUrl(`/service-areas/${a.slug}`), changeFrequency: 'monthly' as const, priority: 0.7 }))
